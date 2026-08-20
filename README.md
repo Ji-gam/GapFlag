@@ -1,4 +1,4 @@
-# ON-Gi
+# Project Template
 
 레이어 우선 구조(Router → Service → Repository)의 FastAPI 백엔드 + Vite/React 프론트엔드 + AI 워커로 구성된 프로젝트 기본 템플릿.
 
@@ -40,9 +40,10 @@ cd frontend && npm install && npm run dev
 - `AGENTS.md` — 에이전트/기여자 단일 진입점(정책+라우팅)
 - `docs/CONTRIBUTING.md` — 구조/브랜치/PR/TDD 순서/로컬 실행/검증
 - `docs/CODING_RULES.md` — 계층/폴더/네이밍/API·DB 포맷/프론트 규칙
-- `docs/SQUAD_MAP.md` — 스쿼드/소유자
 - `docs/FRONTEND_UI_GUIDE.md` — 디자인 시스템(Tailwind + shadcn)
 - `docs/TROUBLESHOOTING.md` — 로컬 실행 에러
+- `auth_kit/README.md` — 회원가입/인증 드롭인 모듈
+- `security_kit/README.md` — 도메인 무관 보안 모듈
 
 > 이 저장소는 도메인 로직을 뺀 뼈대(스켈레톤)만 담고 있습니다. 실제 기능은 각 계층
 > 폴더에 도메인별로 추가하세요.

@@ -12,8 +12,8 @@ from app.core.db.databases import get_db  # noqa: E402
 from auth_kit.router import get_session  # noqa: E402
 
 app = FastAPI(
-    title="ON-Gi API",
-    summary="ON-Gi 백엔드 API",
+    title="GapFlag API",
+    summary="GapFlag 백엔드 API",
     description=(
         "레이어 우선 구조(Router → Service → Repository)의 FastAPI 백엔드 템플릿입니다. "
         "구조/규칙은 `docs/CODING_RULES.md`, 기여 방법은 `docs/CONTRIBUTING.md`를 참고하세요."
@@ -27,7 +27,7 @@ app = FastAPI(
 
 app.include_router(v1_routers)
 app.dependency_overrides[get_session] = get_db
-# TODO(T-ACC-1): 프로젝트 메일러/SMS 게이트웨이 연결 전까지는 인증 메일 링크·본인확인 코드가
+# TODO: 프로젝트 메일러/SMS 게이트웨이 연결 전까지는 인증 메일 링크·본인확인 코드가
 # 로그로만 찍힌다.
 # from auth_kit import router as auth_router_mod
 # auth_router_mod.send_email = my_send_mail

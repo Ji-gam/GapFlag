@@ -1,7 +1,7 @@
 [project]
-name = "on-gi"
+name = "gapflag"
 version = "0.1.0"
-description = "ON-Gi 프로젝트"
+description = "GapFlag 프로젝트"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

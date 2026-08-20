@@ -27,7 +27,7 @@ jobs:
           file: app/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/on-gi:app-v1.0.0
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gapflag:app-v1.0.0
 
       - name: Build and push AI Worker image
         uses: docker/build-push-action@v6
@@ -36,7 +36,7 @@ jobs:
           file: ai_worker/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/on-gi:ai-v1.0.0
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gapflag:ai-v1.0.0
 
       - name: Sync nginx config to EC2
         uses: appleboy/scp-action@v0.1.7

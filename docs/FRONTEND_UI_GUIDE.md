@@ -1,13 +1,13 @@
 # FRONTEND_UI_GUIDE.md — 디자인 시스템 (Tailwind+shadcn)
 
-v1.1 · 이력: `git log docs/FRONTEND_UI_GUIDE.md`. `CODING_RULES.md` §3-5의 실행상세. 상태: Tailwind+shadcn 인프라 설치완료, `InfoPage`가 첫 적용화면, `ChatPage`는 구방식(inline style) 유지중이며 별도PR로 마이그레이션 예정 — 다른 화면은 담당자가 이 문서대로 화면단위 소형PR로 이관.
+v1.1 · 이력: `git log docs/FRONTEND_UI_GUIDE.md`. `CODING_RULES.md` §3-5의 실행상세. 상태: Tailwind+shadcn 인프라 설치완료. 새 화면은 이 문서대로 작성하고, 구방식(inline style)으로 남은 화면은 담당자가 화면단위 소형PR로 이관.
 
 1. 설치된 파일
 `tailwind.config.js`=Tailwind설정(색상/radius/폰트를 CSS변수와 연결). `postcss.config.js`=빌드연동설정. `src/index.css`=디자인토큰 정의, `main.tsx`에서 1회 import. `components.json`=shadcn CLI설정. `src/lib/utils.ts`=`cn()`(Tailwind클래스 조건부병합, 항상 이걸로만). `src/components/ui/*.tsx`=shadcn표준부품(현재`button.tsx`,`input.tsx`). `tsconfig.json`/`vite.config.ts`=`@/`→`src/` alias.
 
 2. 디자인 토큰 (`src/index.css` 정의 — 신규색 하드코딩 금지, 아래 이름으로만)
-`bg-primary`/`text-primary-foreground`=주요강조색(iOS시스템블루계열) — 전송버튼,사용자채팅말풍선.
-`bg-secondary`/`text-secondary-foreground`=옅은회색배경 — AI답변말풍선,보조버튼.
+`bg-primary`/`text-primary-foreground`=주요강조색(iOS시스템블루계열) — 주요 액션 버튼.
+`bg-secondary`/`text-secondary-foreground`=옅은회색배경 — 보조 콘텐츠 카드,보조버튼.
 `bg-muted`/`text-muted-foreground`=흐린텍스트/배경 — 안내문,타임스탬프,placeholder.
 `bg-destructive`=경고/삭제 등 위험동작 — 삭제버튼.
 `border-border`=구분선 — 헤더/입력창 경계.
@@ -18,7 +18,7 @@ v1.1 · 이력: `git log docs/FRONTEND_UI_GUIDE.md`. `CODING_RULES.md` §3-5의 
 ```
 src/components/
 ├── ui/       # shadcn표준부품(Button,Input 등) — 원본 그대로 유지 원칙, 스타일 크게 변경시 팀공유 먼저(`CODING_RULES.md` §3-6과 동일 이유)
-└── common/   # 서비스로직 포함 재사용컴포넌트(DisclaimerBanner 등) — §3-2 규칙 그대로(3곳+ 재사용시 승격)
+└── common/   # 서비스로직 포함 재사용컴포넌트(공지 배너 등) — §3-2 규칙 그대로(3곳+ 재사용시 승격)
 ```
 
 4. 새 shadcn 부품 추가
@@ -35,11 +35,11 @@ import { cn } from "@/lib/utils";
 ```
 레이아웃=Tailwind클래스 직접(`flex`,`gap-2`,`px-4`). 조건부스타일=`cn()`. 버튼/입력창=신규제작 금지,`@/components/ui/button`,`@/components/ui/input` 사용.
 
-6. Apple(HIG) 톤 (ChatPage 적용예시, 다른 화면도 동일톤 유지)
-모서리=넉넉히 둥글게(버튼/입력창`rounded-full`, 카드/말풍선`rounded-2xl`). 그림자=`shadow-sm` 정도만(진한그림자 금지). 색=채도낮게(원색보다`secondary`/`muted` 톤다운 위주). 폰트=시스템폰트 우선(`-apple-system` 등 이미 기본값, 별도설정 불필요). 모바일PWA 안전영역=노치겹침 방지(`pt-[calc(env(safe-area-inset-top)+12px)]` 패턴, ChatPage 헤더/입력창 참고).
+6. Apple(HIG) 톤 (전체 화면 공통 유지)
+모서리=넉넉히 둥글게(버튼/입력창`rounded-full`, 카드/말풍선`rounded-2xl`). 그림자=`shadow-sm` 정도만(진한그림자 금지). 색=채도낮게(원색보다`secondary`/`muted` 톤다운 위주). 폰트=시스템폰트 우선(`-apple-system` 등 이미 기본값, 별도설정 불필요). 모바일PWA 안전영역=노치겹침 방지(`pt-[calc(env(safe-area-inset-top)+12px)]` 패턴).
 
 7. 화면 적용 체크리스트
 `main.tsx`의 `src/index.css` import 확인(이미 완료, 프로젝트전체 1곳) → 화면 안 `style={{}}`를 Tailwind클래스로 전환 → 버튼/입력창을 `ui/` 부품으로 교체 → 색은 §2 토큰이름으로만 → `npm run lint`/`npm run build` 에러없음 확인 후 PR(페이지폴더 단위 소형PR).
 
 8. 참고
-적용예시 기준: `frontend/src/pages/ChatPage/ChatPage.tsx`. 색/레이아웃 규칙 이견시 문서수정 전 팀상의(여러화면 영향). `DisclaimerBanner.tsx`는 시각스타일만 Tailwind전환, 문구/노출로직 불변 — 소유자(T-LLM-1담당) 확인필요.
+색/레이아웃 규칙 이견시 문서수정 전 팀상의(여러화면 영향). 문구/노출로직에 영향을 주는 공용 컴포넌트를 스타일만 전환할 때는 문구·로직 불변을 유지하고 원소유자 확인을 받는다.

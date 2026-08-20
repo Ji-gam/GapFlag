@@ -1,14 +1,13 @@
 # auth_kit — 회원가입/인증 드롭인 모듈
 
-AH_04_01 ~ AH_04_04 네 프로젝트의 회원가입 코드를 비교해서, 각자 잘 된 부분만 합친 것.
+여러 프로젝트의 회원가입 코드를 비교해서, 각자 잘 된 부분만 합친 드롭인 모듈.
 FastAPI + SQLAlchemy 2.0 async 기준. **백엔드만** 포함(프론트/앱은 미포함).
 
 검증 상태: 자체 테스트 20/20 통과, FastAPI 앱 23개 엔드포인트 HTTP 왕복 확인.
 
-> 품앗이온(ON) 요구사항정의서 v1.2 적용 이력(`docs/decision_log/2026-08-10.md`,
-> `docs/tasks/T-ACC-1.md`): 휴대폰 본인확인(§1, REQ-F-ACC-01)과 제재 이력 보존형 탈퇴
-> (§6, REQ-F-ACC-11)를 추가했다. User/Profile 분리는 이 프로젝트에 없다 - 대신
-> `app/models/children.py`의 Child가 User에 직접 소유된다(`docs/CODING_RULES.md` §2-1).
+> 휴대폰 본인확인과 제재 이력 보존형 탈퇴를 지원한다. User/Profile 분리가 필요 없는
+> 서비스라면, 계정에 직접 소유되는 부속 엔티티(예: `app/models/`에 추가하는 도메인
+> 모델)를 User에 FK로 바로 연결하는 구조를 쓴다(`docs/CODING_RULES.md` §2-1).
 
 ---
 
@@ -82,7 +81,7 @@ async def my_profile(user: CurrentUser):
 | GET | `/auth/available/{email,nickname,phone}` | 중복확인 (가입 폼 onBlur) |
 | POST | `/auth/email/verify-request` | 인증 메일 발송 |
 | GET | `/auth/email/verify?token=` | 인증 링크 처리 |
-| POST | `/auth/phone/verify-request` | 본인확인 코드(OTP) 발송 (REQ-F-ACC-01) |
+| POST | `/auth/phone/verify-request` | 본인확인 코드(OTP) 발송 |
 | POST | `/auth/phone/verify` | 본인확인 코드 검증 |
 | POST | `/auth/signup` | 이메일 회원가입 → **201 + 토큰 즉시 발급** |
 | POST | `/auth/login` | 로그인 |
@@ -106,11 +105,11 @@ GET  /auth/terms                     → 약관 목록을 화면에 그린다
 GET  /auth/available/email|nickname  → onBlur마다 중복확인
 POST /auth/email/verify-request      → 메일 발송
 GET  /auth/email/verify?token=       → 사용자가 링크 클릭
-POST /auth/phone/verify-request      → OTP 발송 (REQ-F-ACC-01)
+POST /auth/phone/verify-request      → OTP 발송
 POST /auth/phone/verify              → 코드 확인
 POST /auth/signup                    → 201 + access_token + refresh 쿠키
                                        (프론트가 로그인을 다시 부를 필요 없음)
-→ onboarding_status = profile_required 이므로 아동/보호자 프로필 화면으로
+→ onboarding_status = profile_required 이므로 프로필 입력 화면으로
 ```
 
 ### 가입 흐름 (소셜)
@@ -129,24 +128,24 @@ POST /auth/social/complete {signup_token, nickname, birth_date, gender, agreemen
 
 ---
 
-## 3. 네 프로젝트에서 무엇을 가져왔는지
+## 3. 설계 근거
 
-| 기능 | 출처 | 채택 이유 |
-|---|---|---|
-| 계정/개인정보 분리 사고, 동의 타임스탬프, refresh 로테이션 + 재사용 탐지, 자격증명 zero-width 정리 | 01 | 토큰 탈취 탐지까지 하는 유일한 구현 |
-| PII Fernet 암호화 + 조회용 phone_hash, 실시간 중복확인 엔드포인트, 탈퇴 30일 유예 | 02 | 건강정보 서비스에서 이름·전화번호 평문 저장은 위험 |
-| 이메일 인증 필수, 닉네임 unique, 강한 비밀번호 정책, 소셜 2단계 가입, 아이디 찾기 | 03 | 가입 관문이 가장 두꺼웠던 구현 |
-| 약관 정적 카탈로그 + **버전 관리**(구버전 409), `onboarding_status` 상태머신, ID token 서버 검증 + nonce 소비, 게스트 로그인 | 04 | 동의 개정 이력을 유일하게 다룬 구현 |
+| 기능 | 채택 이유 |
+|---|---|
+| 계정/개인정보 분리 사고, 동의 타임스탬프, refresh 로테이션 + 재사용 탐지, 자격증명 zero-width 정리 | 토큰 탈취까지 탐지할 수 있는 구현을 기준으로 삼았다 |
+| PII Fernet 암호화 + 조회용 phone_hash, 실시간 중복확인 엔드포인트, 탈퇴 30일 유예 | 민감정보를 다루는 서비스에서 이름·전화번호 평문 저장은 위험하다 |
+| 이메일 인증 필수, 닉네임 unique, 강한 비밀번호 정책, 소셜 2단계 가입, 아이디 찾기 | 가입 관문을 가장 두껍게 검증한 패턴을 기준으로 삼았다 |
+| 약관 정적 카탈로그 + **버전 관리**(구버전 409), `onboarding_status` 상태머신, ID token 서버 검증 + nonce 소비, 게스트 로그인 | 동의 개정 이력을 다룰 수 있는 유일한 방식이었다 |
 
-### 서로 어긋났던 부분을 어떻게 통일했는지
+### 설계 결정 메모
 
-- **비밀번호 정책**: 01만 대문자를 안 받았다 → 강한 쪽(대·소·숫·특 8자↑)으로 통일. `config.PASSWORD_REQUIRE_UPPERCASE`로 조절.
-- **동의 저장**: 02는 서버에 아예 안 남기고, 03은 boolean, 01은 타임스탬프, 04는 버전+테이블 → **04 방식으로 통일**. boolean만으로는 약관 개정 시 "무엇에 동의했는지"를 증명할 수 없다.
-- **소셜 계정**: 01은 `users.sns_provider/sns_id` 컬럼 → `SocialAccount` 테이블로 분리. 컬럼 방식은 한 사용자가 구글+카카오를 동시에 연결하는 걸 나중에 못 붙인다.
-- **이메일 최대 길이**: 네 곳 모두 40자 → **254자**(RFC 5321). 40자는 실제로 존재하는 긴 회사 이메일의 가입을 막는다.
-- **가입 후 자동 로그인**: 네 곳 모두 프론트가 signup 직후 login을 한 번 더 호출했다 → signup 응답에 토큰을 바로 담는다. 두 번째 호출 실패가 "계정은 생겼는데 가입 실패"로 보이는 문제가 사라진다.
+- **비밀번호 정책**: 강한 쪽(대·소·숫·특 8자↑)으로 통일. `config.PASSWORD_REQUIRE_UPPERCASE`로 조절.
+- **동의 저장**: **버전+테이블 방식으로 통일**. boolean만으로는 약관 개정 시 "무엇에 동의했는지"를 증명할 수 없다.
+- **소셜 계정**: `users` 테이블 컬럼이 아니라 `SocialAccount` 테이블로 분리. 컬럼 방식은 한 사용자가 여러 소셜 계정을 동시에 연결하는 걸 나중에 못 붙인다.
+- **이메일 최대 길이**: **254자**(RFC 5321). 40자 등으로 제한하면 실제로 존재하는 긴 회사 이메일의 가입을 막는다.
+- **가입 후 자동 로그인**: signup 응답에 토큰을 바로 담는다. 프론트가 signup 직후 login을 다시 호출하면, 그 두 번째 호출 실패가 "계정은 생겼는데 가입 실패"로 보이는 문제가 생긴다.
 - **비밀번호 해시**: bcrypt/passlib 대신 stdlib `hashlib.scrypt` + 버전 프리픽스. 의존성이 하나 줄고, `needs_rehash()`로 argon2 등으로 점진 이전이 가능하다.
-- **죽은 코드**: 04의 `validate_password`/`validate_phone_number`는 복사만 되고 호출부가 없었다 → 실제로 스키마에 연결했다.
+- **죽은 코드 방지**: `validate_password`/`validate_phone_number` 같은 검증 함수는 실제로 스키마 호출부에 연결돼 있는지 항상 확인한다(복사만 되고 호출되지 않는 죽은 코드가 되기 쉽다).
 
 ---
 
@@ -155,18 +154,18 @@ POST /auth/social/complete {signup_token, nickname, birth_date, gender, agreemen
 | 값 | 기본 | 비고 |
 |---|---|---|
 | `PASSWORD_MIN_LENGTH` / `PASSWORD_REQUIRE_UPPERCASE` | 8 / True | |
-| `MIN_SIGNUP_AGE` | 14 | 가입자(보호자) 본인의 나이 하한. 미만은 가입 차단 |
+| `MIN_SIGNUP_AGE` | 14 | 가입자 본인의 나이 하한. 미만은 가입 차단 |
 | `REQUIRE_EMAIL_VERIFICATION` | false | true면 이메일 인증 완료 전 가입 차단 |
-| `REQUIRE_PHONE_VERIFICATION` | true | false면 본인확인 없이 바로 가입 (REQ-F-ACC-01) |
+| `REQUIRE_PHONE_VERIFICATION` | true | false면 본인확인 없이 바로 가입 |
 | `PHONE_VERIFICATION_TTL` | 5분 | OTP 유효시간 |
 | `MAX_LOGIN_ATTEMPTS` / `LOCKOUT_DURATION` | 5 / 15분 | 영구 잠금은 쓰지 말 것(DoS + 자력복구 불가) |
 | `ACCESS_TOKEN_TTL` / `REFRESH_TOKEN_TTL` | 30분 / 14일 | |
-| `WITHDRAWAL_GRACE` | 30일 | `timedelta(0)`이면 즉시 완전 삭제(제재 계정이면 phone_hash만 남김, REQ-F-ACC-11) |
+| `WITHDRAWAL_GRACE` | 30일 | `timedelta(0)`이면 즉시 완전 삭제(제재 계정이면 phone_hash만 남김) |
 
 약관을 바꿀 때는 `terms_catalog.py`만 고친다. **문안을 수정하면 반드시 `version`을 올린다** —
 안 올리면 "무엇에 동의했는지"의 근거가 사라지고, 올리면 기존 사용자가 자동으로 재동의 대상이 된다.
-`GUARDIAN_CONSENT`는 가입 시점 필수가 아니다 - 아동을 등록하려는 사용자만 그 직전에
-제출하면 된다(`app/services/child_service.py`가 확인한다).
+가입 시점에 필수가 아닌 동의 항목(예: 법정대리인 동의)이 있다면, 그 항목이 실제로 필요한
+후속 플로우(부속 엔티티 등록 등)의 서비스 계층에서 별도로 확인·제출받는다.
 
 스케줄러에 붙일 것 두 개:
 
@@ -196,13 +195,13 @@ python -m auth_kit.test_auth_kit
 - **본인확인 코드는 이 모듈이 발송하지 않는다** — `send_sms`가 기본으로는 로그만 남긴다.
   실제 SMS 발송(PASS/NICE 등 유료 서비스 또는 통신사 API)은 프로젝트가 주입한다
   (§1 배선 참고). OTP 발급·검증·시도횟수 제한 자체는 이미 구현돼 있다.
-- **다중 계정 유형** (환자/보호자/기관) — 이 서비스는 보호자만 로그인 계정을 가진다
-  (아동은 `app/models/children.py`의 Child, 계정 없음). 여러 계정 유형이 필요해지면 `User`에
-  `account_type` 컬럼을 추가하고 중복 유니크를 `(email, account_type)`으로 바꾼다.
+- **다중 계정 유형** — 기본 구조는 한 종류의 로그인 계정(User)만 가정한다. 여러 계정
+  유형이 필요해지면 `User`에 `account_type` 컬럼을 추가하고 중복 유니크를
+  `(email, account_type)`으로 바꾼다.
 - **웹 리다이렉트 OAuth** — 이 모듈은 앱 SDK의 ID token 검증 방식만 구현했다. 웹이라면
   authorization code 교환 후 `SocialProfile`을 만들어 `AuthService.social_login()`에 넘기면
   그 뒤 로직(계정 연결·2단계 가입)은 그대로 재사용된다.
-- **신고 확정 판정 자체** — `AuthService.record_sanction(user_id, reason)`은 운영자(ADM) 도메인이
+- **신고 확정 판정 자체** — `AuthService.record_sanction(user_id, reason)`은 운영 도메인이
   신고를 확정했을 때 호출하는 훅이다. 신고 접수·조사·확정 워크플로 자체는 이 모듈 범위 밖.
 - **관리자 약관 관리 화면** — 약관 목록이 코드 상수라 배포로 바뀐다.
 

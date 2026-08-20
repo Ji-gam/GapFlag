@@ -33,9 +33,9 @@ asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
 ```
 
-F. 레포루트에서 `pytest` 실행시 `docs/dev/sample_code_*/` 안 테스트까지 잘못 수집돼 깨짐
-원인: 그 폴더들은 각자 독립 `app` 패키지를 가진 예제라 진짜 앱 `app` 패키지와 이름충돌. pytest가 rootdir 전체 훑으면 충돌.
-조치: `pyproject.toml`의 `[tool.pytest.ini_options]`에 `testpaths = ["app/tests"]` 지정(이미 설정됨). `docs/dev/sample_code_*/`는 그 폴더 안에서 `PYTHONPATH=. pytest -v`로 별도 실행.
+F. 레포루트에서 `pytest` 실행시 예제/샘플 코드 폴더 안 테스트까지 잘못 수집돼 깨짐
+원인: 독립 `app` 패키지를 가진 예제 폴더가 있으면 진짜 앱 `app` 패키지와 이름충돌. pytest가 rootdir 전체 훑으면 충돌.
+조치: `pyproject.toml`의 `[tool.pytest.ini_options]`에 `testpaths = ["app/tests"]` 지정(이미 설정됨). 예제 폴더는 그 폴더 안에서 `PYTHONPATH=. pytest -v`로 별도 실행.
 
 G. 백엔드 응답스키마 변경(필드추가 등)했는데 프론트가 안 맞음
 원인: 백엔드-프론트 타입동기화는 수동규칙(`CODING_RULES.md` §3-4).
