@@ -27,21 +27,6 @@ const FIELD_LABELS: Record<string, string> = {
   gender: "성별",
   phone_number: "휴대폰 번호",
   code: "인증번호",
-  residence_h3: "거주지",
-  job_category: "직군",
-  work_type: "근무 형태",
-  household_composition: "가구 구성",
-  work_date: "근무일",
-  template: "근무 템플릿",
-  months_old: "개월 수",
-  narrative: "서술",
-  answers: "응답",
-  provider_id: "상대",
-  child_id: "아동",
-  meeting_h3: "약속 장소",
-  care_date: "돌봄 날짜",
-  start_slot: "시작 시간",
-  end_slot: "종료 시간",
 };
 
 function toErrorMessage(detail: unknown, status: number): string {

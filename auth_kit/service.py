@@ -257,7 +257,7 @@ class AuthService:
             gender=data.gender,
             email_verified=True,
             phone_verified=True,
-            # 약관·기본정보를 가입에서 다 받았으니 남은 건 아동/보호자 프로필뿐이다.
+            # 약관·기본정보를 가입에서 다 받았으니 남은 건 도메인 프로필뿐이다.
             onboarding_status=OnboardingStatus.PROFILE_REQUIRED,
         )
         self.session.add(user)

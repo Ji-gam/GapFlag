@@ -16,12 +16,8 @@ from . import config
 
 
 class TermsType(StrEnum):
-    SERVICE = "service"  # 서비스 이용약관 (REQ-F-ACC-02)
-    PRIVACY = "privacy"  # 개인정보 수집·이용 (REQ-F-ACC-02)
-    LOCATION = "location"  # 위치정보 수집·이용 (REQ-NF-LAW-02, 위치정보법)
-    GUARDIAN_CONSENT = "guardian_consent"  # 법정대리인 동의(REQ-F-ACC-03) - 가입시점이 아니라
-    # 아동 등록 직전 별도 화면에서 받는다(child_service가 게이트). 이 카탈로그에 REQUIRED_TYPES로
-    # 넣지 않는 이유: 아동이 없는 가입자에게 불필요한 필수동의를 받으면 안 된다.
+    SERVICE = "service"  # 서비스 이용약관
+    PRIVACY = "privacy"  # 개인정보 수집·이용
     MARKETING = "marketing"  # 광고·뉴스레터 수신 (선택)
 
 
@@ -40,14 +36,6 @@ class TermSpec:
 TERMS_CATALOG: tuple[TermSpec, ...] = (
     TermSpec(TermsType.SERVICE, "1.0", "서비스 이용약관", f"{config.FRONTEND_BASE_URL}/terms/service", True),
     TermSpec(TermsType.PRIVACY, "1.0", "개인정보 수집·이용 동의", f"{config.FRONTEND_BASE_URL}/terms/privacy", True),
-    TermSpec(TermsType.LOCATION, "1.0", "위치정보 수집·이용 동의", f"{config.FRONTEND_BASE_URL}/terms/location", True),
-    TermSpec(
-        TermsType.GUARDIAN_CONSENT,
-        "1.0",
-        "아동 정보 등록 법정대리인 동의",
-        f"{config.FRONTEND_BASE_URL}/terms/guardian-consent",
-        False,  # 가입 시점 필수 아님 - 아동 등록 시점에 child_service가 별도로 확인한다.
-    ),
     TermSpec(
         TermsType.MARKETING,
         "1.0",

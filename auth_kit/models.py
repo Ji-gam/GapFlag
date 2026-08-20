@@ -56,7 +56,7 @@ class OnboardingStatus(StrEnum):
 
     PENDING = "pending"  # 계정만 있음 (소셜/게스트 첫 로그인 직후)
     TERMS_AGREED = "terms_agreed"  # 필수 약관 동의 완료
-    PROFILE_REQUIRED = "profile_required"  # 기본 정보까지 완료, 건강 프로필 입력 대기
+    PROFILE_REQUIRED = "profile_required"  # 기본 정보까지 완료, 도메인 프로필 입력 대기
     COMPLETED = "completed"
 
 
@@ -97,12 +97,12 @@ class User(Base):
         default=OnboardingStatus.PENDING,
     )
     email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    # REQ-F-ACC-01. 소셜/게스트 계정은 공급자가 본인확인을 대신하지 않으므로 이 값이 False로 남는다
-    # - 그 상태에서 아동 등록 등 민감 기능을 열어주지 않는 것은 서비스 정책(§CAR/ACC) 몫이다.
+    # 소셜/게스트 계정은 공급자가 본인확인을 대신하지 않으므로 이 값이 False로 남는다
+    # - 그 상태에서 민감 기능을 열어주지 않는 것은 서비스 정책(도메인 계층) 몫이다.
     phone_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    # REQ-F-ACC-11. 신고 확정 등으로 이용제한이 걸린 계정 - 운영자(ADM) 도메인이
+    # 신고 확정 등으로 이용제한이 걸린 계정 - 운영 도메인이
     # AuthService.record_sanction()으로 세운다. 탈퇴 시 이 값이 True면 개인정보 파기와
     # 별개로 phone_hash를 SanctionedIdentity에 남겨 재가입을 막는다.
     is_sanctioned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
