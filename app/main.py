@@ -8,8 +8,10 @@ from fastapi import FastAPI  # noqa: E402
 from fastapi.responses import ORJSONResponse  # noqa: E402
 
 from app.apis.v1 import v1_routers  # noqa: E402
-from app.core.db.databases import get_db  # noqa: E402
-from auth_kit.router import get_session  # noqa: E402
+
+# 로그인 기능을 다시 연결할 때 app/apis/v1/__init__.py의 auth_router와 함께 주석을 해제한다.
+# from app.core.db.databases import get_db  # noqa: E402
+# from auth_kit.router import get_session  # noqa: E402
 
 app = FastAPI(
     title="GapFlag API",
@@ -26,7 +28,7 @@ app = FastAPI(
 )
 
 app.include_router(v1_routers)
-app.dependency_overrides[get_session] = get_db
+# app.dependency_overrides[get_session] = get_db
 # TODO: 프로젝트 메일러/SMS 게이트웨이 연결 전까지는 인증 메일 링크·본인확인 코드가
 # 로그로만 찍힌다.
 # from auth_kit import router as auth_router_mod

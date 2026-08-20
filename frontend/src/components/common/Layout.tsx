@@ -1,11 +1,9 @@
 import { NavLink, Outlet } from "react-router-dom";
 
-const NAV_ITEMS = [
-  { to: "/login", label: "로그인" },
-  { to: "/signup", label: "회원가입" },
-];
+// 로그인 기능이 필요해지면 로그인/회원가입 링크를 다시 추가한다.
+const NAV_ITEMS: { to: string; label: string }[] = [];
 
-// 로그인 필요 라우트 공통 뼈대 — 실제 인증 게이트(RequireAuth)는 T-ACC-1 프론트 연동 시 추가.
+// 로그인 필요 라우트 공통 뼈대 — 실제 인증 게이트는 RequireAuth.
 export default function Layout() {
   return (
     <div>
