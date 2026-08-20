@@ -1,0 +1,43 @@
+/* FRONTEND_UI_GUIDE_v1.0.md 2번 — 디자인 토큰. 색은 여기서만 정의하고 컴포넌트에서는 토큰 이름으로만 쓴다. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* tailwind.config.js에서 preflight를 껐기 때문에(위 border-width 이슈 회피 목적) box-sizing 리셋도
+   같이 빠졌다 — border-box가 아니면 padding·border가 width:100%에 더해져 입력창이 부모 박스를
+   넘친다. border-width에는 영향 없는 규칙이라 preflight를 끈 이유와는 무관하게 안전하다. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 앱 공통 버터옐로우+네이비 팔레트와 1:1 대응하는 HSL 값 — 화면 UX 시안(버터옐로우/네이비 기본,
+   레드는 알림·미완료·위험 배지에만) 기준. 팔레트 바꿀 때 이 값들만 수정하면 전체 화면에 반영된다.
+   pageBg #FFF9DB / text(navy) #1D2C4D / primary(navy) #1D2C4D / primary-foreground #FFF9DB
+   / secondary(card) #FFFDF6 / muted-foreground #8A8570 / danger #E24B4A / border #EFE1B8 */
+:root {
+  --background: 50 100% 93%;
+  --foreground: 221 45% 21%;
+  --primary: 221 45% 21%;
+  --primary-foreground: 50 100% 93%;
+  --secondary: 47 100% 98%;
+  --secondary-foreground: 221 45% 21%;
+  --muted: 47 100% 98%;
+  --muted-foreground: 48 10% 49%;
+  --destructive: 0 72% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 45 63% 83%;
+  --radius: 0.75rem;
+}
+
+/* 파일 업로드(복약관리 분석)의 '파일 선택' 버튼 — 브라우저 기본 회색 대신 흰 배경으로 통일 */
+input[type="file"]::file-selector-button {
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 6px 12px;
+  margin-right: 8px;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+}
