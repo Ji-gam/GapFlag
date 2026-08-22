@@ -16,10 +16,7 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-DATABASE_URL = (
-    f"mysql+asyncmy://{app_config.DB_USER}:{app_config.DB_PASSWORD}"
-    f"@{app_config.DB_HOST}:{app_config.DB_PORT}/{app_config.DB_NAME}"
-)
+DATABASE_URL = app_config.DATABASE_URL
 
 
 def run_migrations_offline() -> None:
@@ -34,7 +31,11 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        render_as_batch=DATABASE_URL.startswith("sqlite"),  # SQLite ALTER 제약 회피
+    )
     with context.begin_transaction():
         context.run_migrations()
 

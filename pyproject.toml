@@ -150,3 +150,8 @@ ignore_missing_imports = true
 # h3(h3-py)도 py.typed 마커/스텁을 제공하지 않는다(celery와 동일한 이유).
 module = ["h3"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# ai 그룹(torch/langchain 등)은 MVP 기간 미설치 — CI가 --group app --group dev만 깐다.
+module = ["langchain.*", "langchain_classic.*", "langchain_chroma.*", "langchain_openai.*", "torch.*", "sentence_transformers.*", "pymupdf.*", "fitz.*"]
+ignore_missing_imports = true

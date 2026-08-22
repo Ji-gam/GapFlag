@@ -1,18 +1,21 @@
 from collections.abc import AsyncGenerator
+from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core import config
 
-DATABASE_URL = (
-    f"mysql+asyncmy://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
-)
+DATABASE_URL = config.DATABASE_URL
 
-engine = create_async_engine(
-    DATABASE_URL,
-    pool_size=config.DB_CONNECTION_POOL_MAXSIZE,
-    connect_args={"connect_timeout": config.DB_CONNECT_TIMEOUT},
-)
+if DATABASE_URL.startswith("sqlite"):
+    Path("data").mkdir(exist_ok=True)
+    engine = create_async_engine(DATABASE_URL)
+else:
+    engine = create_async_engine(
+        DATABASE_URL,
+        pool_size=config.DB_CONNECTION_POOL_MAXSIZE,
+        connect_args={"connect_timeout": config.DB_CONNECT_TIMEOUT},
+    )
 
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 

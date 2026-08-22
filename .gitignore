@@ -30,6 +30,10 @@ ai_worker/chroma_data/
 # local raw-data staging (source CSVs/DB for app/database/*.db builds)
 _data/
 
+# MVP SQLite DB — 스크립트/Alembic으로 재생성
+data/*
+!data/.gitkeep
+
 # ai_worker/source/는 RAG 드롭 폴더다. 여기엔 RAG 재료만 둔다.
 #
 # DUR/e약은요 CSV 8개는 더 이상 손으로 받아 커밋하는 원본이 아니다 — MySQL이 원본이고
