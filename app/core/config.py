@@ -22,6 +22,9 @@ class Config(BaseSettings):
     TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
     TEMPLATE_DIR: str = os.path.join(Path(__file__).resolve().parent.parent, "templates")
 
+    # MVP 로컬 기본값은 SQLite. 배포 시 .env에서 mysql+asyncmy://... 로 덮어쓴다.
+    DATABASE_URL: str = "sqlite+aiosqlite:///./data/gapflag.db"
+
     DB_HOST: str = "localhost"
     DB_PORT: int = 3306
     DB_USER: str = "root"
