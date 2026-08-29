@@ -7,6 +7,7 @@ load_dotenv()
 from fastapi import FastAPI  # noqa: E402
 from fastapi.responses import ORJSONResponse  # noqa: E402
 
+from app.apis.cmp_pages import router as cmp_pages_router  # noqa: E402
 from app.apis.v1 import v1_routers  # noqa: E402
 
 # 로그인 기능을 다시 연결할 때 app/apis/v1/__init__.py의 auth_router와 함께 주석을 해제한다.
@@ -28,6 +29,7 @@ app = FastAPI(
 )
 
 app.include_router(v1_routers)
+app.include_router(cmp_pages_router)
 # app.dependency_overrides[get_session] = get_db
 # TODO: 프로젝트 메일러/SMS 게이트웨이 연결 전까지는 인증 메일 링크·본인확인 코드가
 # 로그로만 찍힌다.
