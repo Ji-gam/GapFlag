@@ -15,7 +15,9 @@ def calc_index(components: dict[str, tuple[float | None, float]]) -> tuple[float
     return weighted_sum / weight_total, coverage
 
 
-def calc_risk_opportunity(risk: dict[str, tuple[float | None, float]], opportunity: dict[str, tuple[float | None, float]]):
+def calc_risk_opportunity(
+    risk: dict[str, tuple[float | None, float]], opportunity: dict[str, tuple[float | None, float]]
+):
     risk_index, risk_coverage = calc_index(risk)
     opp_index, opp_coverage = calc_index(opportunity)
     return {

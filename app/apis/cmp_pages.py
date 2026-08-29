@@ -26,7 +26,9 @@ async def matrix_page(request: Request, ingredient: str, species: str) -> HTMLRe
     compound = cmp_mock.get_compound(ingredient, species)
     if compound is None:
         return templates.TemplateResponse(
-            request, "search.html", {"query": ingredient, "results": [], "error": f"'{ingredient}' 성분을 찾을 수 없습니다."}
+            request,
+            "search.html",
+            {"query": ingredient, "results": [], "error": f"'{ingredient}' 성분을 찾을 수 없습니다."},
         )
     return templates.TemplateResponse(request, "matrix.html", {"compound": compound, "score": _score(compound)})
 
@@ -36,6 +38,8 @@ async def detail_page(request: Request, ingredient: str, species: str) -> HTMLRe
     compound = cmp_mock.get_compound(ingredient, species)
     if compound is None:
         return templates.TemplateResponse(
-            request, "search.html", {"query": ingredient, "results": [], "error": f"'{ingredient}' 성분을 찾을 수 없습니다."}
+            request,
+            "search.html",
+            {"query": ingredient, "results": [], "error": f"'{ingredient}' 성분을 찾을 수 없습니다."},
         )
     return templates.TemplateResponse(request, "detail.html", {"compound": compound, "score": _score(compound)})
