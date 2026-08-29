@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>성분 검색</h1>
+<form method="get" action="/matrix">
+  <input type="text" name="ingredient" placeholder="성분명 (예: carprofen)" value="{{ query }}" required>
+  <select name="species">
+    <option value="dog">개</option>
+    <option value="cat">고양이</option>
+  </select>
+  <button type="submit">조회</button>
+</form>
+
+{% if error %}
+<p style="color:#dc2626">{{ error }}</p>
+{% endif %}
+
+<h2>등록된 성분 목록</h2>
+<ul>
+  {% for c in results %}
+  <li><a href="/matrix?ingredient={{ c.ingredient_name }}&species={{ c.species }}">{{ c.ingredient_name }} ({{ c.species }})</a></li>
+  {% else %}
+  <li class="muted">일치하는 성분이 없습니다.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
