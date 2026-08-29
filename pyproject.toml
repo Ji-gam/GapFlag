@@ -152,6 +152,18 @@ module = ["h3"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-# ai 그룹(torch/langchain 등)은 MVP 기간 미설치 — CI가 --group app --group dev만 깐다.
-module = ["langchain.*", "langchain_classic.*", "langchain_chroma.*", "langchain_openai.*", "torch.*", "sentence_transformers.*", "pymupdf.*", "fitz.*"]
+# MVP 기간에는 ai 그룹(langchain/torch/chroma 등)을 설치하지 않는다(docs/MVP_SCOPE.md).
+# 설치되지 않은 패키지를 import하면 mypy가 "library stub 없음"으로 실패하므로 예외 처리한다.
+# ai_worker/에 실제 코드가 들어가고 ai 그룹을 설치하게 되면 이 블록을 삭제한다.
+module = [
+    "langchain", "langchain.*",
+    "langchain_classic", "langchain_classic.*",
+    "langchain_chroma", "langchain_chroma.*",
+    "langchain_openai", "langchain_openai.*",
+    "chromadb", "chromadb.*",
+    "sentence_transformers", "sentence_transformers.*",
+    "torch", "torch.*",
+    "fitz",
+    "pymupdf", "pymupdf.*",
+]
 ignore_missing_imports = true
