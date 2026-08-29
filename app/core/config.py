@@ -22,9 +22,15 @@ class Config(BaseSettings):
     TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
     TEMPLATE_DIR: str = os.path.join(Path(__file__).resolve().parent.parent, "templates")
 
-    # MVP 로컬 기본값은 SQLite. 배포 시 .env에서 mysql+asyncmy://... 로 덮어쓴다.
+    # DB 접속 문자열 — 이 값 하나만 보고 접속한다(DB_* 개별값은 아래 주석 참고).
+    #   로컬 개발 : sqlite+aiosqlite:///./data/gapflag.db   (기본값, 별도 설치 불필요)
+    #   배포/검증 : mysql+asyncmy://USER:PASSWORD@HOST:PORT/NAME
+    # 로컬을 MySQL로 쓰려면 .env에 DATABASE_URL을 MySQL 형식으로 넣으면 된다.
+    # SQLite를 쓰는 이유와 유효 기간은 docs/MVP_SCOPE.md 참고.
     DATABASE_URL: str = "sqlite+aiosqlite:///./data/gapflag.db"
 
+    # 아래 DB_* 값은 docker-compose의 mysql 컨테이너 기동/헬스체크용으로 남겨둔다.
+    # 앱의 접속에는 쓰이지 않는다 — 앱은 위 DATABASE_URL만 본다.
     DB_HOST: str = "localhost"
     DB_PORT: int = 3306
     DB_USER: str = "root"
