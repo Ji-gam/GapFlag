@@ -1,0 +1,13 @@
+{
+  "version": "6.9",
+  "hitCount": 0,
+  "request": {
+    "query": "\"unknown-ingredient-xyz\" AND (dog OR canine)",
+    "page": 1,
+    "pageSize": 1,
+    "format": "json"
+  },
+  "resultList": {
+    "result": []
+  }
+}
