@@ -47,3 +47,11 @@ def test_r1_clinical_warning_black_box_only() -> None:
 def test_r1_clinical_warning_withdrawn_outranks_black_box() -> None:
     warnings = [{"warningType": "Black Box Warning"}, {"warningType": "Withdrawn"}]
     assert scr_normalize.r1_clinical_warning(warnings) == 100.0
+
+
+def test_r3_voluntary_withdrawal_no_record() -> None:
+    assert scr_normalize.r3_voluntary_withdrawal([]) == 0.0
+
+
+def test_r3_voluntary_withdrawal_has_record() -> None:
+    assert scr_normalize.r3_voluntary_withdrawal([{"application_number": "005-414"}]) == 100.0

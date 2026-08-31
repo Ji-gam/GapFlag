@@ -64,6 +64,9 @@ app = [
     "sqlalchemy[asyncio]>=2.0.36",
     "tzdata>=2026.2",
     "uvicorn>=0.40.0",
+    # FDA Green Book Section 6(승인철회, R3) export가 legacy .xls(BIFF8)라 xlsx 전용인
+    # openpyxl로는 못 읽는다. pandas는 CLAUDE.md에서 금지 - xlrd만 승인받음(이슈 #16).
+    "xlrd>=2.0.1",
 ]
 dev = [
     "aiosqlite>=0.21.0",  # auth_kit/security_kit 자체 테스트용 인메모리 SQLite
@@ -149,6 +152,11 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 # h3(h3-py)도 py.typed 마커/스텁을 제공하지 않는다(celery와 동일한 이유).
 module = ["h3"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# xlrd도 타입 스텁을 제공하지 않는다(celery와 동일한 이유). Green Book R3 파싱용(이슈 #16).
+module = ["xlrd", "xlrd.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
