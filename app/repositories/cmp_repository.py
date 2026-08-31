@@ -19,6 +19,17 @@ async def search_compounds(db: AsyncSession, query: str) -> list[Compound]:
     return list((await db.execute(stmt)).scalars())
 
 
+async def search_compound_species(db: AsyncSession, query: str) -> list[tuple[str, str]]:
+    """검색 화면 목록용: 실제 지수가 계산된(=CompoundScore가 있는) 성분·종 조합만."""
+    stmt = select(Compound.ingredient_name, CompoundScore.species).join(
+        CompoundScore, CompoundScore.compound_id == Compound.id
+    )
+    q = query.strip().lower()
+    if q:
+        stmt = stmt.where(Compound.ingredient_name.contains(q))
+    return [(row[0], row[1]) for row in (await db.execute(stmt)).all()]
+
+
 async def get_score(db: AsyncSession, compound_id: int, species: str) -> CompoundScore | None:
     stmt = select(CompoundScore).where(CompoundScore.compound_id == compound_id, CompoundScore.species == species)
     return (await db.execute(stmt)).scalar_one_or_none()
