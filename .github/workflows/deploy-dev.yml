@@ -1,8 +1,9 @@
 name: Deploy to EC2 (dev)
 
+# EC2 비용 문제로 자동 배포를 중단한다(팀 결정, docs/MVP_SCOPE.md 참고).
+# 필요하면 GitHub Actions 탭에서 수동(workflow_dispatch)으로만 실행한다.
 on:
-  push:
-    branches: [ "dev" ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
