@@ -1,8 +1,8 @@
 """외부 API에서 성분 데이터를 수집해 DB에 저장 (수동 실행, CLAUDE.md: 화면은 DB만 읽는다).
 
-현재 R2(openFDA)·O1(Europe PMC)만 실제로 수집한다. R1·R3·R4·O2·O3는 수집 서비스가
-아직 없어 NULL로 남는다(Tier2 stub, CLAUDE.md §11) — 산식이 NULL을 견디도록 설계돼 있어
-나중에 서비스를 추가해도 이 스크립트의 계산 로직은 바뀌지 않는다.
+현재 R1(Open Targets)·R2(openFDA)·O1(Europe PMC)만 실제로 수집한다. R3·R4·O2·O3는
+수집 서비스가 아직 없어 NULL로 남는다(Tier2 stub, CLAUDE.md §11) — 산식이 NULL을
+견디도록 설계돼 있어 나중에 서비스를 추가해도 이 스크립트의 계산 로직은 바뀌지 않는다.
 
 대상 성분 30~50건 목록이 아직 확정 전이라(docs/REQUIREMENTS §7-3) SEED_COMPOUNDS에
 임시로 몇 개만 넣어둔다. 목록이 정해지면 여기만 갱신하면 된다.
@@ -16,7 +16,7 @@ import asyncio
 from app.core.db.databases import AsyncSessionLocal
 from app.core.utils import scr_normalize
 from app.repositories import cmp_repository
-from app.services import scr_score, src_europepmc_service, src_openfda_service
+from app.services import scr_score, src_europepmc_service, src_openfda_service, src_opentargets_service
 
 # CLAUDE.md 기본 가중치.
 WEIGHTS = {"r1": 25.0, "r2": 25.0, "r3": 25.0, "r4": 25.0, "o1": 40.0, "o2": 30.0, "o3": 30.0}
@@ -42,6 +42,20 @@ async def _collect_one(ingredient_name: str, species: str) -> None:
             raw_json=r2_raw["raw"] if r2_raw else None,
         )
 
+        r1_raw = src_opentargets_service.fetch_drug_warnings(ingredient_name)
+        r1_value = scr_normalize.r1_clinical_warning(r1_raw["warnings"]) if r1_raw else None
+        await cmp_repository.upsert_evidence(
+            db,
+            compound.id,
+            species,
+            "r1",
+            value=r1_value,
+            source_name="Open Targets" if r1_raw else None,
+            summary=f"경고 이력 {len(r1_raw['warnings'])}건" if r1_raw else None,
+            source_url="https://platform.opentargets.org/" if r1_raw else None,
+            raw_json=r1_raw["raw"] if r1_raw else None,
+        )
+
         o1_raw = src_europepmc_service.fetch_literature_count(ingredient_name, species)
         o1_value = scr_normalize.o1_literature_scarcity(o1_raw["count"]) if o1_raw else None
         await cmp_repository.upsert_evidence(
@@ -57,7 +71,7 @@ async def _collect_one(ingredient_name: str, species: str) -> None:
         )
 
         risk = {
-            "r1": (None, WEIGHTS["r1"]),
+            "r1": (r1_value, WEIGHTS["r1"]),
             "r2": (r2_value, WEIGHTS["r2"]),
             "r3": (None, WEIGHTS["r3"]),
             "r4": (None, WEIGHTS["r4"]),

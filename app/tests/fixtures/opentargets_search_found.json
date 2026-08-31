@@ -1,0 +1,9 @@
+{
+  "data": {
+    "search": {
+      "hits": [
+        {"id": "CHEMBL122", "name": "ROFECOXIB", "entity": "drug"}
+      ]
+    }
+  }
+}
