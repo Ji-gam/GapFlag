@@ -1,0 +1,23 @@
+{
+  "version": "6.9",
+  "hitCount": 128,
+  "request": {
+    "query": "\"carprofen\" AND (dog OR canine)",
+    "page": 1,
+    "pageSize": 1,
+    "format": "json"
+  },
+  "resultList": {
+    "result": [
+      {
+        "id": "38112233",
+        "source": "MED",
+        "pmid": "38112233",
+        "title": "Pharmacokinetics of carprofen in dogs following oral administration.",
+        "authorString": "Kim J, Lee S, Park H.",
+        "journalTitle": "J Vet Pharmacol Ther",
+        "pubYear": "2025"
+      }
+    ]
+  }
+}
