@@ -7,9 +7,7 @@ BASE_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 _SPECIES_TERMS = {"dog": "(dog OR canine)", "cat": "(cat OR feline)"}
 
 
-def fetch_literature_count(
-    ingredient_name: str, species: str, client: httpx.Client | None = None
-) -> dict | None:
+def fetch_literature_count(ingredient_name: str, species: str, client: httpx.Client | None = None) -> dict | None:
     """성분명·종으로 관련 문헌 건수를 조회한다.
 
     반환: {"ingredient_name", "species", "count", "raw"} 또는 조회 실패 시 None (O1은 NULL 유지).
