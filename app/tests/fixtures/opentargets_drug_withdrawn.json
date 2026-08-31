@@ -1,0 +1,22 @@
+{
+  "data": {
+    "drug": {
+      "id": "CHEMBL122",
+      "name": "ROFECOXIB",
+      "drugWarnings": [
+        {
+          "warningType": "Withdrawn",
+          "toxicityClass": "cardiotoxicity",
+          "description": "Risk for heart attack and stroke",
+          "year": 2004
+        },
+        {
+          "warningType": "Black Box Warning",
+          "toxicityClass": null,
+          "description": null,
+          "year": null
+        }
+      ]
+    }
+  }
+}

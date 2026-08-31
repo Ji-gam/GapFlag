@@ -33,3 +33,17 @@ def test_o1_literature_scarcity_matches_manual_formula() -> None:
     count = 42
     expected = max(0.0, 100.0 - 30.0 * math.log10(count + 1))
     assert scr_normalize.o1_literature_scarcity(count) == expected
+
+
+def test_r1_clinical_warning_no_warnings() -> None:
+    assert scr_normalize.r1_clinical_warning([]) == 0.0
+
+
+def test_r1_clinical_warning_black_box_only() -> None:
+    warnings = [{"warningType": "Black Box Warning"}]
+    assert scr_normalize.r1_clinical_warning(warnings) == 60.0
+
+
+def test_r1_clinical_warning_withdrawn_outranks_black_box() -> None:
+    warnings = [{"warningType": "Black Box Warning"}, {"warningType": "Withdrawn"}]
+    assert scr_normalize.r1_clinical_warning(warnings) == 100.0
