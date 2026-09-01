@@ -33,6 +33,7 @@ _data/
 # MVP SQLite DB — 스크립트/Alembic으로 재생성
 data/*
 !data/.gitkeep
+!data/seed_compounds.csv
 
 # ai_worker/source/는 RAG 드롭 폴더다. 여기엔 RAG 재료만 둔다.
 #
@@ -69,8 +70,4 @@ app/secrets/
 # 개인 로컬 백업(drugs_full.db 등 app/database/*.db 원본을 담은 zip) - 커밋 대상 아님
 app/database/database.zip
 
-# 로컬 개발용 SQLite (docs/MVP_SCOPE.md) — 스크립트로 재생성하므로 커밋하지 않는다.
-# 바이너리 파일이라 4명이 각자 갱신하면 충돌을 풀 수 없다.
-data/
-!data/.gitkeep
 *.sqlite3

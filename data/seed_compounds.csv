@@ -1,0 +1,36 @@
+ingredient_name,species,note
+carprofen,dog,종간대사 사례
+acetaminophen,cat,종간대사 사례
+aspirin,cat,종간대사 사례
+propofol,cat,종간대사 사례
+propofol,dog,종간대사 사례
+ketamine,cat,종간대사 사례
+meloxicam,dog,수의승인 경쟁구간
+meloxicam,cat,수의승인 경쟁구간
+firocoxib,dog,수의승인 경쟁구간
+robenacoxib,cat,수의승인 경쟁구간
+deracoxib,dog,수의승인 경쟁구간
+maropitant,dog,수의승인 경쟁구간
+pimobendan,dog,수의승인 경쟁구간
+furosemide,dog,수의승인 경쟁구간
+enrofloxacin,dog,수의승인 경쟁구간
+doxycycline,dog,수의승인 경쟁구간
+phenobarbital,dog,수의승인 경쟁구간
+cyclosporine,dog,수의승인 경쟁구간
+selamectin,cat,수의승인 경쟁구간
+fluralaner,dog,수의승인 경쟁구간
+lokivetmab,dog,항체
+bedinvetmab,dog,항체
+frunevetmab,cat,항체
+oclacitinib,dog,항체 유사 신약
+grapiprant,dog,항체 유사 신약
+capromorelin,dog,항체 유사 신약
+bexagliflozin,cat,항체 유사 신약
+gabapentin,cat,인체약 전용 확장
+trazodone,dog,인체약 전용 확장
+fluoxetine,dog,인체약 전용 확장
+mirtazapine,cat,인체약 전용 확장
+telmisartan,cat,인체약 전용 확장
+methimazole,cat,인체약 전용 확장
+toceranib,dog,인체약 전용 확장
+masitinib,dog,인체약 전용 확장

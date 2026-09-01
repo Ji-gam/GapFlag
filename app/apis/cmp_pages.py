@@ -41,16 +41,23 @@ async def _lookup(db: AsyncSession, ingredient: str, species: str) -> tuple[dict
 
 
 @router.get("/matrix", response_class=HTMLResponse)
-async def matrix_page(request: Request, db: Db, ingredient: str, species: str) -> HTMLResponse:
-    found = await _lookup(db, ingredient, species)
-    if found is None:
-        return templates.TemplateResponse(
-            request,
-            "search.html",
-            {"query": ingredient, "results": [], "error": f"'{ingredient}' 성분을 찾을 수 없습니다."},
-        )
-    compound, score = found
-    return templates.TemplateResponse(request, "matrix.html", {"compound": compound, "score": score})
+async def matrix_page(request: Request, db: Db, ingredient: str = "", species: str = "") -> HTMLResponse:
+    points = await cmp_service.list_matrix_points(db)
+    if not points:
+        points = cmp_mock.list_matrix_points()
+
+    highlight = None
+    if ingredient and species:
+        found = await _lookup(db, ingredient, species)
+        if found is None:
+            return templates.TemplateResponse(
+                request,
+                "search.html",
+                {"query": ingredient, "results": [], "error": f"'{ingredient}' 성분을 찾을 수 없습니다."},
+            )
+        highlight = (ingredient.strip().lower(), species.strip().lower())
+
+    return templates.TemplateResponse(request, "matrix.html", {"points": points, "highlight": highlight})
 
 
 @router.get("/compound/{ingredient}", response_class=HTMLResponse)

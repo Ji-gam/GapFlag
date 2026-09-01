@@ -1,42 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
 <p><a href="/">&larr; 검색으로</a></p>
-<h1>{{ compound.ingredient_name }} ({{ compound.species }}) — 위험×기회 매트릭스</h1>
+<h1>위험 × 기회 매트릭스</h1>
 
-<p>
-  위험지수: {% if score.risk_index is not none %}{{ "%.1f"|format(score.risk_index) }}{% else %}<span class="muted">데이터 없음</span>{% endif %}
-  (커버리지 {{ (score.risk_coverage * 100)|round(0) }}%)
-  ·
-  기회지수: {% if score.opportunity_index is not none %}{{ "%.1f"|format(score.opportunity_index) }}{% else %}<span class="muted">데이터 없음</span>{% endif %}
-  (커버리지 {{ (score.opportunity_coverage * 100)|round(0) }}%)
-</p>
-
-{% set size = 320 %}
-{% set pad = 20 %}
+{% set size = 520 %}
+{% set pad = 30 %}
 <svg viewBox="0 0 {{ size }} {{ size }}" width="{{ size }}" height="{{ size }}">
   <line x1="{{ pad }}" y1="{{ size - pad }}" x2="{{ size - pad }}" y2="{{ size - pad }}" stroke="#9ca3af"/>
   <line x1="{{ pad }}" y1="{{ pad }}" x2="{{ pad }}" y2="{{ size - pad }}" stroke="#9ca3af"/>
   <line x1="{{ size // 2 }}" y1="{{ pad }}" x2="{{ size // 2 }}" y2="{{ size - pad }}" stroke="#e5e7eb" stroke-dasharray="4"/>
   <line x1="{{ pad }}" y1="{{ size // 2 }}" x2="{{ size - pad }}" y2="{{ size // 2 }}" stroke="#e5e7eb" stroke-dasharray="4"/>
 
-  <text x="{{ size // 2 }}" y="{{ size - 2 }}" font-size="11" text-anchor="middle" fill="#6b7280">위험지수 &rarr;</text>
-  <text x="10" y="{{ size // 2 }}" font-size="11" text-anchor="middle" fill="#6b7280" transform="rotate(-90 10 {{ size // 2 }})">기회지수 &rarr;</text>
+  <text x="{{ size // 2 }}" y="{{ size - 8 }}" font-size="12" text-anchor="middle" fill="#6b7280">위험지수 &rarr;</text>
+  <text x="14" y="{{ size // 2 }}" font-size="12" text-anchor="middle" fill="#6b7280" transform="rotate(-90 14 {{ size // 2 }})">기회지수 &rarr;</text>
 
-  <text x="{{ pad + 5 }}" y="{{ pad + 12 }}" font-size="11" fill="#6b7280">우선 검토</text>
-  <text x="{{ size - pad - 5 }}" y="{{ pad + 12 }}" font-size="11" text-anchor="end" fill="#6b7280">위험 감수 검토</text>
-  <text x="{{ pad + 5 }}" y="{{ size - pad - 5 }}" font-size="11" fill="#6b7280">비어 있는 이유가 있음</text>
-  <text x="{{ size - pad - 5 }}" y="{{ size - pad - 5 }}" font-size="11" text-anchor="end" fill="#6b7280">회피</text>
+  <text x="{{ pad + 6 }}" y="{{ pad + 14 }}" font-size="12" fill="#6b7280">우선 검토</text>
+  <text x="{{ size - pad - 6 }}" y="{{ pad + 14 }}" font-size="12" text-anchor="end" font-weight="bold" fill="#1d4ed8">비어 있는 이유가 있음</text>
+  <text x="{{ pad + 6 }}" y="{{ size - pad - 6 }}" font-size="12" fill="#6b7280">경쟁 구간</text>
+  <text x="{{ size - pad - 6 }}" y="{{ size - pad - 6 }}" font-size="12" text-anchor="end" fill="#6b7280">회피</text>
 
-  {% if score.risk_index is not none and score.opportunity_index is not none %}
-  {% set mx = pad + (score.risk_index / 100) * (size - 2 * pad) %}
-  {% set my = (size - pad) - (score.opportunity_index / 100) * (size - 2 * pad) %}
-  <circle cx="{{ mx }}" cy="{{ my }}" r="7" fill="#2563eb"/>
-  {% endif %}
+  {% set ns = namespace(no_coord=[]) %}
+  {% for p in points %}
+    {% if p.risk_index is not none and p.opportunity_index is not none %}
+    {% set cx = pad + (p.risk_index / 100) * (size - 2 * pad) %}
+    {% set cy = (size - pad) - (p.opportunity_index / 100) * (size - 2 * pad) %}
+    {% set is_highlight = highlight and p.ingredient_name == highlight[0] and p.species == highlight[1] %}
+    {% set low_coverage = p.risk_coverage < 0.5 or p.opportunity_coverage < 0.5 %}
+    <a href="/compound/{{ p.ingredient_name }}?species={{ p.species }}">
+      <circle cx="{{ cx }}" cy="{{ cy }}"
+        r="{{ 9 if is_highlight else 6 }}"
+        fill="{{ '#dc2626' if is_highlight else '#2563eb' }}"
+        fill-opacity="{{ 0.4 if low_coverage else 0.85 }}"
+        stroke="{{ '#dc2626' if is_highlight else 'none' }}" stroke-width="2">
+        <title>{{ p.ingredient_name }} ({{ p.species }}) — 위험 {{ "%.0f"|format(p.risk_index) }} / 기회 {{ "%.0f"|format(p.opportunity_index) }}</title>
+      </circle>
+    </a>
+    {% else %}
+    {% set ns.no_coord = ns.no_coord + [p] %}
+    {% endif %}
+  {% endfor %}
 </svg>
 
-{% if score.risk_index is none or score.opportunity_index is none %}
-<p class="muted">위험지수 또는 기회지수를 계산할 데이터가 부족해 위치를 표시할 수 없습니다.</p>
+{% set no_coord = ns.no_coord %}
+{% if no_coord %}
+<p class="muted">
+  아래 성분은 위험지수 또는 기회지수를 계산할 데이터가 부족해 매트릭스에 표시하지 못했습니다.
+  <strong>데이터가 없다고 해서 위험이 없다는 뜻이 아닙니다.</strong>
+</p>
+<ul>
+  {% for p in no_coord %}
+  <li class="muted"><a href="/compound/{{ p.ingredient_name }}?species={{ p.species }}">{{ p.ingredient_name }} ({{ p.species }})</a></li>
+  {% endfor %}
+</ul>
 {% endif %}
-
-<p><a href="/compound/{{ compound.ingredient_name }}?species={{ compound.species }}">근거 카드 보기 &rarr;</a></p>
 {% endblock %}

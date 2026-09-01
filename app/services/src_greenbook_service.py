@@ -4,6 +4,8 @@
 openpyxl로는 못 읽음 — 승인 경위는 이슈 #16).
 """
 
+from functools import lru_cache
+
 import httpx
 import xlrd
 
@@ -40,6 +42,17 @@ def find_withdrawals(header: list[str], rows: list[list], ingredient_name: str) 
     return matches
 
 
+@lru_cache(maxsize=8)
+def _download_workbook(client: httpx.Client) -> bytes | None:
+    """Section6 Excel을 받는다. 같은 client로 반복 호출하면(build_cache.py 배치) 한 번만 받는다."""
+    try:
+        response = client.get(BASE_URL)
+        response.raise_for_status()
+        return response.content
+    except httpx.HTTPError:
+        return None
+
+
 def fetch_voluntary_withdrawals(ingredient_name: str, client: httpx.Client | None = None) -> dict | None:
     """성분명으로 Green Book의 자발적 승인철회 이력을 조회한다.
 
@@ -51,14 +64,12 @@ def fetch_voluntary_withdrawals(ingredient_name: str, client: httpx.Client | Non
     owns_client = client is None
     client = client or httpx.Client(timeout=20.0)
     try:
-        response = client.get(BASE_URL)
-        response.raise_for_status()
-        content = response.content
-    except httpx.HTTPError:
-        return None
+        content = _download_workbook(client)
     finally:
         if owns_client:
             client.close()
+    if content is None:
+        return None
 
     try:
         book = xlrd.open_workbook(file_contents=content)

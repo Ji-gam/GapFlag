@@ -28,6 +28,26 @@ async def search_compounds(db: AsyncSession, query: str) -> list[dict]:
     return [{"ingredient_name": name, "species": species} for name, species in pairs]
 
 
+async def list_matrix_points(db: AsyncSession) -> list[dict]:
+    """전체 성분·종 조합의 매트릭스 좌표. 지수가 NULL인 조합도 빼지 않고 담는다
+    (CLAUDE.md: 데이터 없음은 화면에서 회색으로 표시 — 여기서 걸러내면 안 된다)."""
+    try:
+        pairs = await cmp_repository.list_scores(db)
+    except OperationalError:
+        return []
+    return [
+        {
+            "ingredient_name": name,
+            "species": score.species,
+            "risk_index": score.risk_index,
+            "risk_coverage": score.risk_coverage,
+            "opportunity_index": score.opportunity_index,
+            "opportunity_coverage": score.opportunity_coverage,
+        }
+        for name, score in pairs
+    ]
+
+
 async def get_compound_view(db: AsyncSession, ingredient_name: str, species: str) -> dict | None:
     """DB에 저장된 성분·종 조합만 반환. 지수는 build_cache.py가 미리 계산해둔 값을 그대로 읽는다
     (CLAUDE.md: 화면은 DB만 읽는다 — 여기서 재계산하지 않는다)."""
