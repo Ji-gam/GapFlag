@@ -4,14 +4,20 @@
 R4·O2·O3는 수집 서비스가 아직 없어 NULL로 남는다(Tier2 stub, CLAUDE.md §11) — 산식이
 NULL을 견디도록 설계돼 있어 나중에 서비스를 추가해도 이 스크립트의 계산 로직은 바뀌지 않는다.
 
-대상 성분 30~50건 목록이 아직 확정 전이라(docs/REQUIREMENTS §7-3) SEED_COMPOUNDS에
-임시로 몇 개만 넣어둔다. 목록이 정해지면 여기만 갱신하면 된다.
+대상 성분 목록은 data/seed_compounds.csv (ingredient_name,species,note)에서 읽는다.
+목록을 바꾸려면 그 CSV만 고치면 된다 — 이 스크립트는 건드릴 필요 없다.
 
 사용법 (레포 루트에서, app 패키지 import를 위해 -m으로 실행):
     uv run python -m scripts.build_cache
 """
 
 import asyncio
+import csv
+import sys
+import time
+from pathlib import Path
+
+import httpx
 
 from app.core.db.databases import AsyncSessionLocal
 from app.core.utils import scr_normalize
@@ -27,10 +33,17 @@ from app.services import (
 # CLAUDE.md 기본 가중치.
 WEIGHTS = {"r1": 25.0, "r2": 25.0, "r3": 25.0, "r4": 25.0, "o1": 40.0, "o2": 30.0, "o3": 30.0}
 
-SEED_COMPOUNDS = [("carprofen", "dog")]
+SEED_CSV_PATH = Path(__file__).resolve().parent.parent / "data" / "seed_compounds.csv"
 
 
-async def _collect_one(ingredient_name: str, species: str) -> None:
+def load_seed_compounds() -> list[tuple[str, str]]:
+    if not SEED_CSV_PATH.exists():
+        sys.exit(f"{SEED_CSV_PATH} 가 없습니다. data/seed_compounds.csv를 먼저 만드세요.")
+    with SEED_CSV_PATH.open(encoding="utf-8") as f:
+        return [(row["ingredient_name"].strip().lower(), row["species"].strip().lower()) for row in csv.DictReader(f)]
+
+
+async def _collect_one(ingredient_name: str, species: str, greenbook_client: httpx.Client) -> None:
     async with AsyncSessionLocal() as db:
         compound = await cmp_repository.upsert_compound(db, ingredient_name)
 
@@ -62,7 +75,7 @@ async def _collect_one(ingredient_name: str, species: str) -> None:
             raw_json=r1_raw["raw"] if r1_raw else None,
         )
 
-        r3_raw = src_greenbook_service.fetch_voluntary_withdrawals(ingredient_name)
+        r3_raw = src_greenbook_service.fetch_voluntary_withdrawals(ingredient_name, client=greenbook_client)
         r3_value = scr_normalize.r3_voluntary_withdrawal(r3_raw["withdrawals"]) if r3_raw else None
         await cmp_repository.upsert_evidence(
             db,
@@ -117,8 +130,20 @@ async def _collect_one(ingredient_name: str, species: str) -> None:
 
 
 async def main() -> None:
-    for ingredient_name, species in SEED_COMPOUNDS:
-        await _collect_one(ingredient_name, species)
+    compounds = load_seed_compounds()
+    ok = 0
+    failed: list[str] = []
+    with httpx.Client(timeout=20.0) as greenbook_client:
+        for i, (ingredient_name, species) in enumerate(compounds):
+            if i > 0:
+                time.sleep(1)  # 외부 API 4종 순차 호출 — 레이트리밋 대책
+            try:
+                await _collect_one(ingredient_name, species, greenbook_client)
+                ok += 1
+            except Exception as exc:  # noqa: BLE001 - 한 성분 실패가 배치를 죽이면 안 됨
+                failed.append(f"{ingredient_name}/{species}")
+                print(f"{ingredient_name}/{species} 실패: {exc}")
+    print(f"완료: 성공 {ok} / 실패 {len(failed)}{' (' + ', '.join(failed) + ')' if failed else ''}")
 
 
 if __name__ == "__main__":

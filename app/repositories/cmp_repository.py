@@ -30,6 +30,12 @@ async def search_compound_species(db: AsyncSession, query: str) -> list[tuple[st
     return [(row[0], row[1]) for row in (await db.execute(stmt)).all()]
 
 
+async def list_scores(db: AsyncSession) -> list[tuple[str, CompoundScore]]:
+    """매트릭스 산점도용: 지수가 계산된 모든 성분·종 조합을 (성분명, CompoundScore)로 반환."""
+    stmt = select(Compound.ingredient_name, CompoundScore).join(CompoundScore, CompoundScore.compound_id == Compound.id)
+    return [(row[0], row[1]) for row in (await db.execute(stmt)).all()]
+
+
 async def get_score(db: AsyncSession, compound_id: int, species: str) -> CompoundScore | None:
     stmt = select(CompoundScore).where(CompoundScore.compound_id == compound_id, CompoundScore.species == species)
     return (await db.execute(stmt)).scalar_one_or_none()

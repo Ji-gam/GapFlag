@@ -1,5 +1,7 @@
 """Mock MVP용 성분 데이터. 실제 API 연동 전까지 고정 dict 사용 (docs/STEP4-2_MockMVP_PRD_NextJS.md §6~7)."""
 
+from app.services import scr_score
+
 _WEIGHTS = {"r1": 25.0, "r2": 25.0, "r3": 25.0, "r4": 25.0, "o1": 40.0, "o2": 30.0, "o3": 30.0}
 
 _COMPOUNDS: dict[tuple[str, str], dict] = {
@@ -80,3 +82,23 @@ def get_compound(ingredient_name: str, species: str) -> dict | None:
 
 def weight_for(component_key: str) -> float:
     return _WEIGHTS[component_key]
+
+
+def list_matrix_points() -> list[dict]:
+    """DB가 비어있을 때(마이그레이션 전) 매트릭스 화면이 쓰는 폴백 좌표."""
+    points = []
+    for compound in _COMPOUNDS.values():
+        risk = {k: (v["value"], weight_for(k)) for k, v in compound["risk"].items()}
+        opportunity = {k: (v["value"], weight_for(k)) for k, v in compound["opportunity"].items()}
+        score = scr_score.calc_risk_opportunity(risk, opportunity)
+        points.append(
+            {
+                "ingredient_name": compound["ingredient_name"],
+                "species": compound["species"],
+                "risk_index": score["risk_index"],
+                "risk_coverage": score["risk_coverage"],
+                "opportunity_index": score["opportunity_index"],
+                "opportunity_coverage": score["opportunity_coverage"],
+            }
+        )
+    return points
