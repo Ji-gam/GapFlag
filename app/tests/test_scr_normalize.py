@@ -35,6 +35,19 @@ def test_o1_literature_scarcity_matches_manual_formula() -> None:
     assert scr_normalize.o1_literature_scarcity(count) == expected
 
 
+def test_o2_clinical_absence_zero_trials_is_max_absence() -> None:
+    assert scr_normalize.o2_clinical_absence(0) == 100.0
+
+
+def test_o2_clinical_absence_hand_calculated() -> None:
+    # 100 - 40 * log10(3) = 100 - 40 * 0.4771... = 80.9144...
+    assert scr_normalize.o2_clinical_absence(2) == max(0.0, 100.0 - 40.0 * math.log10(3))
+
+
+def test_o2_clinical_absence_floors_at_zero() -> None:
+    assert scr_normalize.o2_clinical_absence(10_000_000) == 0.0
+
+
 def test_r1_clinical_warning_no_warnings() -> None:
     assert scr_normalize.r1_clinical_warning([]) == 0.0
 

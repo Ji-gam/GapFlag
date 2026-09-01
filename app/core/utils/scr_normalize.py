@@ -13,6 +13,13 @@ def o1_literature_scarcity(count: int) -> float:
     return max(0.0, 100.0 - 30.0 * math.log10(count + 1))
 
 
+def o2_clinical_absence(count: int) -> float:
+    """사람 임상시험(ClinicalTrials.gov) 건수 → 임상 부재 점수. 임상이 없을수록 기회가 크다."""
+    if count == 0:
+        return 100.0
+    return max(0.0, 100.0 - 40.0 * math.log10(count + 1))
+
+
 def r1_clinical_warning(warnings: list[dict]) -> float:
     """Open Targets drugWarnings → 위험 점수. 철회(Withdrawn) > 블랙박스 경고 > 없음.
 

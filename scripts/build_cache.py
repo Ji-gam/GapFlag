@@ -1,8 +1,8 @@
 """외부 API에서 성분 데이터를 수집해 DB에 저장 (수동 실행, CLAUDE.md: 화면은 DB만 읽는다).
 
-현재 R1(Open Targets)·R2(openFDA)·R3(Green Book)·O1(Europe PMC)만 실제로 수집한다.
-R4·O2·O3는 수집 서비스가 아직 없어 NULL로 남는다(Tier2 stub, CLAUDE.md §11) — 산식이
-NULL을 견디도록 설계돼 있어 나중에 서비스를 추가해도 이 스크립트의 계산 로직은 바뀌지 않는다.
+현재 R1(Open Targets)·R2(openFDA)·R3(Green Book)·O1(Europe PMC)·O2(ClinicalTrials.gov)만
+실제로 수집한다. R4·O3는 수집 서비스가 아직 없어 NULL로 남는다(Tier2 stub, CLAUDE.md §11) —
+산식이 NULL을 견디도록 설계돼 있어 나중에 서비스를 추가해도 이 스크립트의 계산 로직은 바뀌지 않는다.
 
 대상 성분 목록은 data/seed_compounds.csv (ingredient_name,species,note)에서 읽는다.
 목록을 바꾸려면 그 CSV만 고치면 된다 — 이 스크립트는 건드릴 필요 없다.
@@ -24,6 +24,7 @@ from app.core.utils import scr_normalize
 from app.repositories import cmp_repository
 from app.services import (
     scr_score,
+    src_clinicaltrials_service,
     src_europepmc_service,
     src_greenbook_service,
     src_openfda_service,
@@ -103,6 +104,20 @@ async def _collect_one(ingredient_name: str, species: str, greenbook_client: htt
             raw_json=o1_raw["raw"] if o1_raw else None,
         )
 
+        o2_raw = src_clinicaltrials_service.fetch_trial_count(ingredient_name)
+        o2_value = scr_normalize.o2_clinical_absence(o2_raw["count"]) if o2_raw else None
+        await cmp_repository.upsert_evidence(
+            db,
+            compound.id,
+            species,
+            "o2",
+            value=o2_value,
+            source_name="ClinicalTrials.gov" if o2_raw else None,
+            summary=f"사람 임상시험 {o2_raw['count']}건" if o2_raw else None,
+            source_url="https://clinicaltrials.gov/" if o2_raw else None,
+            raw_json=o2_raw["raw"] if o2_raw else None,
+        )
+
         risk = {
             "r1": (r1_value, WEIGHTS["r1"]),
             "r2": (r2_value, WEIGHTS["r2"]),
@@ -111,7 +126,7 @@ async def _collect_one(ingredient_name: str, species: str, greenbook_client: htt
         }
         opportunity = {
             "o1": (o1_value, WEIGHTS["o1"]),
-            "o2": (None, WEIGHTS["o2"]),
+            "o2": (o2_value, WEIGHTS["o2"]),
             "o3": (None, WEIGHTS["o3"]),
         }
         score = scr_score.calc_risk_opportunity(risk, opportunity)
