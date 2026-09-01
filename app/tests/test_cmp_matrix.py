@@ -1,5 +1,7 @@
 """매트릭스 산점도용 cmp_service.list_matrix_points: NULL 지수 조합도 빠지지 않는지 확인."""
 
+from collections.abc import AsyncGenerator
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -9,7 +11,7 @@ from app.services import cmp_service
 
 
 @pytest.fixture
-async def db() -> AsyncSession:
+async def db() -> AsyncGenerator[AsyncSession]:
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
