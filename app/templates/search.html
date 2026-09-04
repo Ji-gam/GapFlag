@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>성분 검색</h1>
-<p><a href="/matrix">전체 성분 위험×기회 매트릭스 보기 &rarr;</a> · <a href="/about">산식·데이터 출처 &rarr;</a></p>
 <form method="get" action="/matrix">
   <input type="text" name="ingredient" placeholder="성분명 (예: carprofen)" value="{{ query }}" required>
   <select name="species">
