@@ -8,8 +8,10 @@
 <svg viewBox="0 0 {{ size }} {{ size }}" width="{{ size }}" height="{{ size }}">
   <line x1="{{ pad }}" y1="{{ size - pad }}" x2="{{ size - pad }}" y2="{{ size - pad }}" stroke="#9ca3af"/>
   <line x1="{{ pad }}" y1="{{ pad }}" x2="{{ pad }}" y2="{{ size - pad }}" stroke="#9ca3af"/>
-  <line x1="{{ size // 2 }}" y1="{{ pad }}" x2="{{ size // 2 }}" y2="{{ size - pad }}" stroke="#e5e7eb" stroke-dasharray="4"/>
-  <line x1="{{ pad }}" y1="{{ size // 2 }}" x2="{{ size - pad }}" y2="{{ size // 2 }}" stroke="#e5e7eb" stroke-dasharray="4"/>
+  {% set risk_x = pad + (risk_baseline / 100) * (size - 2 * pad) %}
+  {% set opp_y = (size - pad) - (opportunity_baseline / 100) * (size - 2 * pad) %}
+  <line x1="{{ risk_x }}" y1="{{ pad }}" x2="{{ risk_x }}" y2="{{ size - pad }}" stroke="#e5e7eb" stroke-dasharray="4"/>
+  <line x1="{{ pad }}" y1="{{ opp_y }}" x2="{{ size - pad }}" y2="{{ opp_y }}" stroke="#e5e7eb" stroke-dasharray="4"/>
 
   <text x="{{ size // 2 }}" y="{{ size - 8 }}" font-size="12" text-anchor="middle" fill="#6b7280">위험지수 &rarr;</text>
   <text x="14" y="{{ size // 2 }}" font-size="12" text-anchor="middle" fill="#6b7280" transform="rotate(-90 14 {{ size // 2 }})">기회지수 &rarr;</text>
@@ -40,6 +42,12 @@
     {% endif %}
   {% endfor %}
 </svg>
+
+<p class="muted">
+  점선 기준선은 고정 50점이 아니라 <strong>현재 후보군의 중앙값</strong>
+  (위험 {{ "%.1f"|format(risk_baseline) }} / 기회 {{ "%.1f"|format(opportunity_baseline) }})이다.
+  지수는 절대 척도가 아니라 후보군 내 상대 순위다.
+</p>
 
 {% set no_coord = ns.no_coord %}
 {% if no_coord %}

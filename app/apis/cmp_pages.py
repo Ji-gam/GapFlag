@@ -50,6 +50,7 @@ async def matrix_page(request: Request, db: Db, ingredient: str = "", species: s
     points = await cmp_service.list_matrix_points(db)
     if not points:
         points = cmp_mock.list_matrix_points()
+    risk_baseline, opportunity_baseline = scr_score.baselines(points)
 
     highlight = None
     if ingredient and species:
@@ -62,7 +63,16 @@ async def matrix_page(request: Request, db: Db, ingredient: str = "", species: s
             )
         highlight = (ingredient.strip().lower(), species.strip().lower())
 
-    return templates.TemplateResponse(request, "matrix.html", {"points": points, "highlight": highlight})
+    return templates.TemplateResponse(
+        request,
+        "matrix.html",
+        {
+            "points": points,
+            "highlight": highlight,
+            "risk_baseline": risk_baseline,
+            "opportunity_baseline": opportunity_baseline,
+        },
+    )
 
 
 @router.get("/compound/{ingredient}", response_class=HTMLResponse)

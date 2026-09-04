@@ -80,7 +80,15 @@ async def _collect_one(
         )
 
         r3_raw = src_greenbook_service.fetch_voluntary_withdrawals(ingredient_name, client=greenbook_client)
-        r3_value = scr_normalize.r3_voluntary_withdrawal(r3_raw["withdrawals"]) if r3_raw else None
+        r3_approved = ingredient_name in approved_ingredients if approved_ingredients is not None else None
+        r3_value = scr_normalize.r3_voluntary_withdrawal(r3_raw["withdrawals"], r3_approved) if r3_raw else None
+        r3_summary = None
+        if r3_raw:
+            r3_summary = (
+                f"자발적 승인철회 기록 {len(r3_raw['withdrawals'])}건"
+                if r3_raw["withdrawals"]
+                else ("승인유지 확인됨" if r3_approved else "승인철회 기록 없음, 승인여부 미확인")
+            )
         await cmp_repository.upsert_evidence(
             db,
             compound.id,
@@ -88,7 +96,7 @@ async def _collect_one(
             "r3",
             value=r3_value,
             source_name="FDA Green Book" if r3_raw else None,
-            summary=f"자발적 승인철회 기록 {len(r3_raw['withdrawals'])}건" if r3_raw else None,
+            summary=r3_summary,
             source_url="https://animaldrugsatfda.fda.gov/adafda/views/#/home" if r3_raw else None,
             raw_json=r3_raw["withdrawals"] if r3_raw else None,
         )
