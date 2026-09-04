@@ -33,7 +33,7 @@ _COMPOUNDS: dict[tuple[str, str], dict] = {
             "r4": {
                 "value": None,
                 "label": "특허 밀집도",
-                "source_name": "EPO OPS",
+                "source_name": "PatentsView",
                 "summary": "특허 데이터 미확인",
                 "source_url": "#",
             },

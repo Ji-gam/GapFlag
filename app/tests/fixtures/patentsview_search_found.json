@@ -1,0 +1,8 @@
+{
+  "error": false,
+  "count": 1,
+  "total_hits": 132,
+  "patents": [
+    {"patent_id": "10123456"}
+  ]
+}

@@ -57,3 +57,6 @@ class Config(BaseSettings):
     NAVER_CLIENT_ID: str = ""
     NAVER_CLIENT_SECRET: str = ""
     NAVER_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/naver/callback"
+
+    # PatentsView Search API (R4 특허 밀집도) — 비워두면 R4는 NULL로 남는다(위험지수 커버리지 75%).
+    PATENTSVIEW_API_KEY: str = ""

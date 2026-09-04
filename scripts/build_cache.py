@@ -1,9 +1,9 @@
 """외부 API에서 성분 데이터를 수집해 DB에 저장 (수동 실행, CLAUDE.md: 화면은 DB만 읽는다).
 
-현재 R1(Open Targets)·R2(openFDA)·R3(Green Book)·O1(Europe PMC)·O2(ClinicalTrials.gov)·
-O3(Green Book Section2)까지 수집한다. R4는 EPO 키 승인 대기 중이라 아직 NULL로 남는다
-(Tier2 stub, CLAUDE.md §11) — 산식이 NULL을 견디도록 설계돼 있어 서비스를 추가해도
-이 스크립트의 계산 로직은 바뀌지 않는다.
+R1(Open Targets)·R2(openFDA)·R3(Green Book)·R4(PatentsView)·O1(Europe PMC)·
+O2(ClinicalTrials.gov)·O3(Green Book Section2)까지 수집한다. R4는 .env의
+PATENTSVIEW_API_KEY가 비어 있으면 NULL로 남는다 — 산식이 NULL을 견디도록 설계돼 있어
+키가 없어도 나머지 구성요소로 지수가 계산된다.
 
 대상 성분 목록은 data/seed_compounds.csv (ingredient_name,species,note)에서 읽는다.
 목록을 바꾸려면 그 CSV만 고치면 된다 — 이 스크립트는 건드릴 필요 없다.
@@ -30,6 +30,7 @@ from app.services import (
     src_greenbook_service,
     src_openfda_service,
     src_opentargets_service,
+    src_patentsview_service,
 )
 
 # CLAUDE.md 기본 가중치.
@@ -101,6 +102,20 @@ async def _collect_one(
             raw_json=r3_raw["withdrawals"] if r3_raw else None,
         )
 
+        r4_raw = src_patentsview_service.fetch_patent_count(ingredient_name)
+        r4_value = scr_normalize.r4_patent_density(r4_raw["count"]) if r4_raw else None
+        await cmp_repository.upsert_evidence(
+            db,
+            compound.id,
+            species,
+            "r4",
+            value=r4_value,
+            source_name="PatentsView" if r4_raw else None,
+            summary=f"미국 등록특허 {r4_raw['count']}건" if r4_raw else None,
+            source_url="https://search.patentsview.org/" if r4_raw else None,
+            raw_json=r4_raw["raw"] if r4_raw else None,
+        )
+
         o1_raw = src_europepmc_service.fetch_literature_count(ingredient_name, species)
         o1_value = scr_normalize.o1_literature_scarcity(o1_raw["count"]) if o1_raw else None
         await cmp_repository.upsert_evidence(
@@ -154,7 +169,7 @@ async def _collect_one(
             "r1": (r1_value, WEIGHTS["r1"]),
             "r2": (r2_value, WEIGHTS["r2"]),
             "r3": (r3_value, WEIGHTS["r3"]),
-            "r4": (None, WEIGHTS["r4"]),
+            "r4": (r4_value, WEIGHTS["r4"]),
         }
         opportunity = {
             "o1": (o1_value, WEIGHTS["o1"]),

@@ -78,6 +78,19 @@ def test_r3_voluntary_withdrawal_approval_unknown_is_null() -> None:
     assert scr_normalize.r3_voluntary_withdrawal([], approved=None) is None
 
 
+def test_r4_patent_density_zero_count() -> None:
+    assert scr_normalize.r4_patent_density(0) == 0.0
+
+
+def test_r4_patent_density_hand_calculated() -> None:
+    # 30 * log10(100) = 30 * 2 = 60
+    assert scr_normalize.r4_patent_density(99) == 60.0
+
+
+def test_r4_patent_density_caps_at_100() -> None:
+    assert scr_normalize.r4_patent_density(999_999) == 100.0
+
+
 def test_o3_unapproved_when_approved() -> None:
     assert scr_normalize.o3_unapproved(True) == 0.0
 

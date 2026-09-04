@@ -44,6 +44,15 @@ def o3_unapproved(approved: bool) -> float:
     return 0.0 if approved else 100.0
 
 
+def r4_patent_density(count: int) -> float:
+    """미국 등록특허 건수(PatentsView) → 특허 밀집도 위험 점수. 특허가 빽빽할수록 진입장벽이 높다.
+
+    ponytail: 원 규격은 EPO OPS 패밀리 수였으나 PatentsView는 미국 등록특허만 센다.
+    전세계 패밀리 기준이 필요해지면 EPO OPS 연동으로 대체.
+    """
+    return min(100.0, 30.0 * math.log10(count + 1))
+
+
 def r3_voluntary_withdrawal(withdrawals: list[dict], approved: bool | None = None) -> float | None:
     """Green Book Section 6(자발적 승인철회) 기록 + Section 2(승인목록) → 위험 점수.
 
