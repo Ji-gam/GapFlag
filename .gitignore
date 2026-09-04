@@ -71,3 +71,8 @@ app/secrets/
 app/database/database.zip
 
 *.sqlite3
+
+# local tool state / outputs
+.serena/
+graphify-out/
+KU_AI_Nest_팀_아이디어_비교표.pdf
