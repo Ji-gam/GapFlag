@@ -24,9 +24,19 @@ RUN uv sync --group app --no-dev --frozen
 COPY ./app ./app
 COPY ./auth_kit ./auth_kit
 COPY ./security_kit ./security_kit
+# data/gapflag.db는 .gitignore 대상이라 여기 안 들어온다(의도된 동작) — seed_compounds.csv만
+# 딸려온다. scripts/는 build_cache.py(무료 호스팅 슬립 후 재기동 시 자동 재수집용).
+COPY ./data ./data
+COPY ./scripts ./scripts
 
 # 5. 해당 이미지를 활용하여 도커컨테이너 실행시 실행되는 명령어입니다.
 # FastAPI를 uvicorn을 활용하여 비동기 환경으로 서버를 실행합니다.
 # --no-sync 옵션은 uv run시 uv.lock파일과 환경에 설치된 패키지들을 비교하여 없는 패키지를 설치하기 때문에
 # 불필요한 의존성을 설치하지 않기 위해 사용합니다.
-CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]
+# docker-compose는 command:로 이 CMD를 덮어쓰므로(마이그레이션+--reload) 로컬 개발엔 영향 없다.
+# 여기서만 마이그레이션+데이터 수집을 같이 실행하는 이유: Render 무료 티어처럼 디스크가
+# 영구 보존 안 되는 호스팅에선(슬립 후 재기동마다 컨테이너가 새로 뜸) 이 CMD가 재기동될
+# 때마다 build_cache.py로 성분 데이터를 다시 채워야 화면에 값이 남는다. 실패해도 서버는
+# 뜬다(build_cache.py가 성분별로 실패를 삼키고 계속 진행 — 화면은 그 성분만 NULL로 표시).
+# PORT는 Render/Railway가 주입하는 환경변수이고, 없으면(로컬 docker run 등) 8000이 기본값이다.
+CMD ["sh", "-c", "uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.build_cache; uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
