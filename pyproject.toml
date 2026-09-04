@@ -44,6 +44,9 @@ ai = [
     "pymupdf>=1.28.0",
 ]
 app = [
+    # 배포 이미지가 SQLite로 뜨는 경우(Render 무료 데모 등, 이슈 #34)를 위해 dev와 별개로
+    # app 그룹에도 둔다 — MySQL(asyncmy) 배포에선 그냥 안 쓰인다.
+    "aiosqlite>=0.21.0",
     "alembic>=1.14.0",
     "apscheduler>=3.11.0",
     "asyncmy>=0.2.11",
