@@ -35,6 +35,15 @@ def r1_clinical_warning(warnings: list[dict]) -> float:
     return 0.0
 
 
+def o3_unapproved(approved: bool) -> float:
+    """Green Book Section2 승인목록 존재 여부 → 미승인 점수. 승인 안 됐을수록 기회가 크다.
+
+    ponytail: Section2에 종(dog/cat) 컬럼이 없어 성분 단위로만 판정한다(R3와 같은 단순화).
+    종별 조인이 필요해지면 별도 소스 연동으로 대체.
+    """
+    return 0.0 if approved else 100.0
+
+
 def r3_voluntary_withdrawal(withdrawals: list[dict]) -> float:
     """Green Book Section 6(자발적 승인철회) 기록 → 위험 점수.
 

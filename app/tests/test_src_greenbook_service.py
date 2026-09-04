@@ -59,3 +59,59 @@ def test_fetch_voluntary_withdrawals_not_an_xls_returns_none() -> None:
     result = src_greenbook_service.fetch_voluntary_withdrawals("carprofen", client=client)
 
     assert result is None
+
+
+ACTIVE_INGREDIENTS_HEADER = ["Application Number", "Active Ingredients", "Trade Name", "Ingredient"]
+ACTIVE_INGREDIENTS_ROWS = [
+    ["015-030", "Acepromazine Maleate", "PromAce Injectable", "Acepromazine Maleate"],
+    ["200-757", "Butacaine Sulfate, Nitrofurazone", "Combo Product", "Butacaine Sulfate"],
+]
+
+
+def test_find_approved_ingredients_matches_single_ingredient_row() -> None:
+    result = src_greenbook_service.find_approved_ingredients(ACTIVE_INGREDIENTS_HEADER, ACTIVE_INGREDIENTS_ROWS)
+
+    assert result is not None
+    assert "acepromazine maleate" in result
+
+
+def test_find_approved_ingredients_matches_within_comma_separated_ingredients() -> None:
+    result = src_greenbook_service.find_approved_ingredients(ACTIVE_INGREDIENTS_HEADER, ACTIVE_INGREDIENTS_ROWS)
+
+    assert result is not None
+    assert "nitrofurazone" in result
+
+
+def test_find_approved_ingredients_no_match_absent_from_set() -> None:
+    result = src_greenbook_service.find_approved_ingredients(ACTIVE_INGREDIENTS_HEADER, ACTIVE_INGREDIENTS_ROWS)
+
+    assert result is not None
+    assert "carprofen" not in result
+
+
+def test_find_approved_ingredients_missing_required_column_returns_none() -> None:
+    result = src_greenbook_service.find_approved_ingredients(["Application Number"], [["005-414"]])
+
+    assert result is None
+
+
+def test_fetch_approved_ingredients_network_failure_returns_none() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("boom", request=request)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+
+    result = src_greenbook_service.fetch_approved_ingredients(client=client)
+
+    assert result is None
+
+
+def test_fetch_approved_ingredients_not_an_xls_returns_none() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, content=b"not an xls file")
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+
+    result = src_greenbook_service.fetch_approved_ingredients(client=client)
+
+    assert result is None

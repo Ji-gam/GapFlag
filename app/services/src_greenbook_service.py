@@ -12,8 +12,12 @@ import xlrd
 BASE_URL = (
     "https://animaldrugsatfda.fda.gov/adafda/app/search/public/voluntaryWithdrawalExcel/Section6VoluntaryWithdrawal"
 )
+ACTIVE_INGREDIENTS_URL = (
+    "https://animaldrugsatfda.fda.gov/adafda/app/search/public/ingredientsInformationExcel/Section2ActiveIngredients"
+)
 
 _REQUIRED_COLUMNS = {"Application Number", "Date Withdrawn", "Ingredients", "Sponsor When Withdrawn"}
+_ACTIVE_INGREDIENTS_COLUMN = "Active Ingredients"
 
 
 def find_withdrawals(header: list[str], rows: list[list], ingredient_name: str) -> list[dict] | None:
@@ -42,6 +46,23 @@ def find_withdrawals(header: list[str], rows: list[list], ingredient_name: str) 
     return matches
 
 
+def find_approved_ingredients(header: list[str], rows: list[list]) -> set[str] | None:
+    """Section2 헤더/행 목록에서 승인된 활성성분 이름 집합(소문자)을 만든다.
+
+    한 행의 Active Ingredients 컬럼도 Section6처럼 콤마로 여러 성분이 들어있을 수 있다.
+    종(dog/cat) 컬럼이 없어 성분 단위로만 판정 가능 — 알려진 한계(SESSION_HANDOFF §2-1).
+    """
+    col = {name: i for i, name in enumerate(header)}
+    if _ACTIVE_INGREDIENTS_COLUMN not in col:
+        return None
+
+    approved: set[str] = set()
+    for row in rows:
+        for ingredient in str(row[col[_ACTIVE_INGREDIENTS_COLUMN]]).split(","):
+            approved.add(ingredient.strip().lower())
+    return approved
+
+
 @lru_cache(maxsize=8)
 def _download_workbook(client: httpx.Client) -> bytes | None:
     """Section6 Excel을 받는다. 같은 client로 반복 호출하면(build_cache.py 배치) 한 번만 받는다."""
@@ -51,6 +72,43 @@ def _download_workbook(client: httpx.Client) -> bytes | None:
         return response.content
     except httpx.HTTPError:
         return None
+
+
+@lru_cache(maxsize=8)
+def _download_active_ingredients_workbook(client: httpx.Client) -> bytes | None:
+    """Section2 Excel을 받는다(같은 client면 배치 내 1회만)."""
+    try:
+        response = client.get(ACTIVE_INGREDIENTS_URL)
+        response.raise_for_status()
+        return response.content
+    except httpx.HTTPError:
+        return None
+
+
+def fetch_approved_ingredients(client: httpx.Client | None = None) -> set[str] | None:
+    """Green Book Section2 전체 승인 활성성분 목록을 조회한다 (O3 원자료, 성분 1개당이 아니라 1회 조회).
+
+    반환: 소문자 성분명 집합, 또는 조회/파싱 실패 시 None(O3는 NULL 유지).
+    """
+    owns_client = client is None
+    client = client or httpx.Client(timeout=20.0)
+    try:
+        content = _download_active_ingredients_workbook(client)
+    finally:
+        if owns_client:
+            client.close()
+    if content is None:
+        return None
+
+    try:
+        book = xlrd.open_workbook(file_contents=content)
+        sheet = book.sheet_by_index(0)
+        header = sheet.row_values(0)
+        rows = [sheet.row_values(r) for r in range(1, sheet.nrows)]
+    except xlrd.XLRDError:
+        return None
+
+    return find_approved_ingredients(header, rows)
 
 
 def fetch_voluntary_withdrawals(ingredient_name: str, client: httpx.Client | None = None) -> dict | None:
