@@ -1,18 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>성분 검색</h1>
-<form method="get" action="/matrix">
-  <input type="text" name="ingredient" placeholder="성분명 (예: carprofen)" value="{{ query }}" required>
-  <select name="species">
-    <option value="dog">개</option>
-    <option value="cat">고양이</option>
-  </select>
-  <button type="submit">조회</button>
-</form>
+<div class="hero">
+  <div class="hero-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+  </div>
+  <h1>동물용 신약 초기 스크리닝</h1>
+  <p class="hero-sub">개발을 검토 중인 타깃이나 성분명을 입력하면,<br>기회와 위험 요소를 분석하여 매트릭스로 시각화합니다.</p>
 
-{% if error %}
-<p style="color:#dc2626">{{ error }}</p>
-{% endif %}
+  <div class="search-card">
+    <form method="get" action="/matrix">
+      <label for="ingredient">타깃 / 성분명 입력</label>
+      <div class="search-input {% if error %}has-error{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="ingredient" type="text" name="ingredient" placeholder="예: Compound-X, 아목시실린 등" value="{{ query }}">
+      </div>
+      {% if error %}
+      <p class="error-text">{{ error }}</p>
+      {% endif %}
+      <select name="species">
+        <option value="dog">개</option>
+        <option value="cat">고양이</option>
+      </select>
+      <button type="submit" class="btn-primary">분석하기 <span aria-hidden="true">&rarr;</span></button>
+    </form>
+  </div>
+</div>
 
 <h2>등록된 성분 목록</h2>
 <ul>

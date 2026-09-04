@@ -5,36 +5,82 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gap &amp; Flag</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; line-height: 1.5; }
-  a { color: #2563eb; }
+  :root {
+    --accent: #4f46e5;
+    --accent-dark: #4338ca;
+    --accent-bg: #eef2ff;
+    --ink: #111827;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --page-bg: #f8f9fc;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 0 auto; padding: 0 1rem 2rem; color: var(--ink); line-height: 1.5; background: var(--page-bg); }
+  a { color: var(--accent); }
   .muted { color: #9ca3af; }
   h1 { margin-top: 0.25rem; }
   h1, h2 { line-height: 1.3; }
-  .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+  .card { border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; background: #fff; }
   .card.null { background: #f3f4f6; color: #9ca3af; }
-  .disclaimer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; font-size: 0.85rem; color: #6b7280; }
+  .disclaimer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--muted); }
   input, select, button { font-size: 1rem; padding: 0.4rem; }
   table { border-collapse: collapse; width: 100%; margin: 0.75rem 0 1.25rem; font-size: 0.9rem; }
-  th, td { border: 1px solid #e5e7eb; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+  th, td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
   th { background: #f9fafb; }
   code { background: #f3f4f6; padding: 0.1rem 0.3rem; border-radius: 4px; }
 
-  .site-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1rem; padding-bottom: 0.75rem; margin-bottom: 1.25rem; border-bottom: 1px solid #e5e7eb; }
-  .site-header .brand { font-weight: 700; color: #1a1a1a; text-decoration: none; margin-right: 0.25rem; }
-  .site-header nav { display: flex; gap: 0.9rem; font-size: 0.9rem; }
+  .site-header { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1rem; padding: 1.25rem 0 0.75rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+  .site-header .brand { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--ink); text-decoration: none; }
+  .site-header .brand-icon { width: 1.5rem; height: 1.5rem; color: var(--accent); }
+  .site-header .badge { font-size: 0.75rem; color: var(--muted); background: #f3f4f6; border-radius: 999px; padding: 0.15rem 0.6rem; }
+  .site-header nav { display: flex; gap: 0.9rem; font-size: 0.9rem; margin-left: auto; }
 
   .score-summary { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1rem 0 1.5rem; }
-  .score-box { flex: 1 1 200px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.75rem 1rem; }
+  .score-box { flex: 1 1 200px; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem; background: #fff; }
   .score-box.null { background: #f3f4f6; }
-  .score-box .score-label { font-size: 0.85rem; color: #6b7280; }
+  .score-box .score-label { font-size: 0.85rem; color: var(--muted); }
   .score-box .score-value { font-size: 1.6rem; font-weight: 700; }
   .score-box .score-value.null { color: #9ca3af; font-size: 1.1rem; font-weight: 400; }
-  .coverage-badge { display: inline-block; margin-top: 0.25rem; font-size: 0.8rem; padding: 0.1rem 0.45rem; border-radius: 999px; background: #eef2ff; color: #3730a3; }
+  .coverage-badge { display: inline-block; margin-top: 0.25rem; font-size: 0.8rem; padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--accent-bg); color: #3730a3; }
+
+  .hero { text-align: center; padding: 2.5rem 0 1rem; }
+  .hero-icon { width: 3.5rem; height: 3.5rem; margin: 0 auto 1.25rem; display: flex; align-items: center; justify-content: center; background: var(--accent-bg); color: var(--accent); border-radius: 14px; }
+  .hero-icon svg { width: 1.75rem; height: 1.75rem; }
+  .hero h1 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+  .hero-sub { color: var(--muted); margin-bottom: 1.75rem; }
+  .search-card { text-align: left; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .search-card label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .search-input { position: relative; margin-bottom: 0.5rem; }
+  .search-input svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 1.1rem; height: 1.1rem; color: #9ca3af; }
+  .search-input input { width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.4rem; border: 1px solid var(--border); border-radius: 10px; }
+  .search-input.has-error input { border-color: #fca5a5; }
+  .error-text { color: #dc2626; font-size: 0.85rem; margin: 0.25rem 0 0.75rem; }
+  .search-card select { width: 100%; margin-bottom: 0.75rem; border: 1px solid var(--border); border-radius: 10px; }
+  .btn-primary { display: flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 0.75rem; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: var(--accent-dark); }
+
+  .back-link { display: inline-block; font-size: 0.85rem; text-decoration: none; color: var(--muted); margin-bottom: 0.5rem; }
+  .back-link:hover { color: var(--accent); }
+  .score-box.risk { border-top: 3px solid #dc2626; }
+  .score-box.opportunity { border-top: 3px solid var(--accent); }
+  .score-box.risk .score-value { color: #dc2626; }
+  .score-box.opportunity .score-value { color: var(--accent); }
+  .score-box.null .score-value { color: #9ca3af; }
+  .card { box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .card strong { display: block; margin-bottom: 0.35rem; }
+  .card p { margin: 0.25rem 0; }
+  .card.null { border-style: dashed; }
+  .null-note { color: #9ca3af; font-style: italic; }
+  .card-source { font-size: 0.85rem; color: var(--muted); }
 </style>
 </head>
 <body>
 <header class="site-header">
-  <a class="brand" href="/">Gap &amp; Flag</a>
+  <a class="brand" href="/">
+    <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V2Z"/><path d="M9 2h6"/></svg>
+    Gap &amp; Flag
+  </a>
+  <span class="badge">MVP</span>
   <nav>
     <a href="/">검색</a>
     <a href="/matrix">매트릭스</a>
