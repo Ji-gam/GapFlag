@@ -3,29 +3,42 @@
 <p><a href="/matrix?ingredient={{ compound.ingredient_name }}&species={{ compound.species }}">&larr; 매트릭스로</a></p>
 <h1>{{ compound.ingredient_name }} ({{ compound.species }}) — 근거 카드</h1>
 
-<h2>위험 (Risk)</h2>
-{% for key, c in compound.risk.items() %}
+<div class="score-summary">
+  {% for label, index, coverage, total in [
+    ("위험지수", score.risk_index, score.risk_coverage, 4),
+    ("기회지수", score.opportunity_index, score.opportunity_coverage, 3),
+  ] %}
+  <div class="score-box {% if index is none %}null{% endif %}">
+    <div class="score-label">{{ label }}</div>
+    {% if index is not none %}
+    <div class="score-value">{{ "%.0f"|format(index) }}</div>
+    <span class="coverage-badge">커버리지 {{ "%.0f"|format(coverage * 100) }}% ({{ (coverage * total)|round|int }}/{{ total }})</span>
+    {% else %}
+    <div class="score-value null">데이터 없음</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{% macro evidence_cards(items, null_text) %}
+{% for key, c in items.items() %}
 <div class="card {% if c.value is none %}null{% endif %}">
   <strong>{{ c.label }}</strong>
   {% if c.value is not none %}
   <p>값: {{ c.value }}</p>
   {% else %}
-  <p>데이터 없음 — 위험이 없다는 뜻이 아닙니다.</p>
+  <p>{{ null_text }}</p>
   {% endif %}
+  {% if c.source_url %}
   <p>{{ c.summary }} (<a href="{{ c.source_url }}">{{ c.source_name }}</a>)</p>
+  {% endif %}
 </div>
 {% endfor %}
+{% endmacro %}
+
+<h2>위험 (Risk)</h2>
+{{ evidence_cards(compound.risk, "데이터 없음 — 위험이 없다는 뜻이 아닙니다.") }}
 
 <h2>기회 (Opportunity)</h2>
-{% for key, c in compound.opportunity.items() %}
-<div class="card {% if c.value is none %}null{% endif %}">
-  <strong>{{ c.label }}</strong>
-  {% if c.value is not none %}
-  <p>값: {{ c.value }}</p>
-  {% else %}
-  <p>데이터 없음 — 위험이 없다는 뜻이 아닙니다.</p>
-  {% endif %}
-  <p>{{ c.summary }} (<a href="{{ c.source_url }}">{{ c.source_name }}</a>)</p>
-</div>
-{% endfor %}
+{{ evidence_cards(compound.opportunity, "확인하지 못했습니다 — 기회가 없다는 뜻이 아닙니다.") }}
 {% endblock %}
