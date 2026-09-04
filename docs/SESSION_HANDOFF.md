@@ -1,6 +1,7 @@
 # SESSION_HANDOFF.md — 다음 세션 인수인계
 
 v1.0 · 작성 2026-08-16 · 이 문서 하나만 읽으면 이전 대화 없이 이어서 작업할 수 있다.
+최신 업데이트는 §11(2026-09-05) 참고 — R4 연동, Render 배포.
 
 ---
 
@@ -284,7 +285,7 @@ scripts/build_cache.py             수집 배치 (수동 실행)
 
 1. **`ci.yml` 한 줄 수정** (§2-2 미적용 항목)
 2. **4명 전원 `uv sync` + `uvicorn` 실행 확인** — 여기서 막히면 최우선 과제
-3. **EPO OPS 개발자 키 신청** — OAuth 승인 대기 시간이 있어 미루면 3회차에 못 씀
+3. ~~EPO OPS 개발자 키 신청~~ → **PatentsView로 전환됨(§11)**. USPTO ODP 신원인증(ID.me) 대기 중 — 급하면 시간 날 때 진행, 데모는 R4 NULL로도 문제없음
 4. **대상 성분 30~50건 확정** → `data/seed_compounds.csv` 커밋
    - 개·고양이 대상, 항체·단백질 의약품 우선
    - **4개 사분면에 고르게 분포하도록** 선정 (한쪽에 몰리면 도구가 작동하는지 못 보여줌)
@@ -310,7 +311,7 @@ scripts/build_cache.py             수집 배치 (수동 실행)
 |---|---|---|
 | OI-01 | 대상 성분 최종 목록 | 1회차 |
 | OI-02 | 항체·단백질 의약품 우선 여부 확정 | 1회차 |
-| OI-03 | 배포처 결정 및 빈 앱 배포 | 1~2회차 |
+| OI-03 | ~~배포처 결정 및 빈 앱 배포~~ | ✅ 해결(§11) — Render 무료, https://gapflag.onrender.com |
 | OI-04 | 성분명 동의어 사전 초안 | 2회차 |
 | OI-05 | §4-2 정규화 계수 실측 조정 | 3회차 |
 | OI-06 | 사분면 라벨 한글 최종 문구 | 3회차 |
@@ -347,3 +348,35 @@ docs/SESSION_HANDOFF.md 와 docs/MVP_SCOPE.md 를 먼저 읽어라.
 3. *"경쟁사가 하면 되지 않나?"* → 대형 벤더는 인체 시장이 100배라 동물 쪽에 안 온다. 공공 도구는 인간 유전체 기반이라 종 축 추가가 확장이 아니라 재설계다.
 
 **절대 하지 말 것** — 수치를 단정하기. AI 신약개발 시장은 리서치사별로 8배 차이가 난다. 항상 범위로 말한다.
+
+---
+
+## 11. 2026-09-05 세션 업데이트 — R4 연동 · Render 배포
+
+### R4(특허 밀집도) 연동
+
+EPO OPS는 OAuth2 승인 대기가 필요해서, **PatentsView Search API로 전환**했다.
+
+- `app/services/src_patentsview_service.py` 신규 (기존 `src_*.py`와 동일 패턴)
+- `scr_normalize.r4_patent_density()` 추가, `build_cache.py`에 배선
+- 그런데 PatentsView도 2025년 USPTO Open Data Portal(ODP)로 흡수되면서 **ID.me 신원인증**(정부 신분증 업로드)이 필요해졌다 — 결국 EPO OPS와 비슷한 진입장벽. 지금은 `PATENTSVIEW_API_KEY`가 비어 있어 R4는 NULL로 남아 있다(설계상 정상 — 위험지수 커버리지 75%로 표시됨).
+- 이은호 씨가 ID.me 인증 마치고 키 받으면 `.env`에 `PATENTSVIEW_API_KEY` 넣고 `uv run python -m scripts.build_cache` 재실행하면 채워진다.
+- PR: [#35](https://github.com/Ji-gam/GapFlag/pull/35)
+
+### 배포 — Render 무료 티어
+
+3일짜리 데모용으로 **Render(Docker 웹서비스, Free 플랜)**에 배포했다.
+
+- URL: **https://gapflag.onrender.com**
+- Railway는 1회성 $5 트라이얼 크레딧 소진 후 카드 필요 → 제외. Render 무료는 크레딧 소진형이 아니라 매달 갱신되는 flat 무료 플랜(카드 불필요)이라 채택
+- 무료 티어는 15분 미접속 시 슬립되고 디스크가 초기화됨 → MySQL 대신 **SQLite + 컨테이너 기동할 때마다 `build_cache.py` 재수집**하는 방식 채택(`app/Dockerfile` CMD). 재기동마다 1~2분 정도 로딩 필요
+- `aiosqlite`가 원래 `dev` 그룹에만 있어 배포 이미지(MySQL 드라이버 `asyncmy`만 있음)가 SQLite로 못 떴던 문제 발견 → 이슈 [#34](https://github.com/Ji-gam/GapFlag/issues/34)로 요청, 승인받아 `app` 그룹에도 추가
+- PR: [#36](https://github.com/Ji-gam/GapFlag/pull/36)
+- 로컬 `docker build` + `docker run`으로 Render와 동일한 콜드스타트 시퀀스(마이그레이션 → 35개 성분 재수집 → 서버 기동)를 미리 검증하고 배포함
+
+### 남은 것
+
+- **발표 직전에 한 번 미리 접속해서 깨워둘 것** (슬립 상태면 첫 방문자가 1~2분 대기)
+- 계속 안 잠들게 하려면 [UptimeRobot](https://uptimerobot.com) 같은 무료 핑 서비스로 10분마다 접속 — 제안만 하고 아직 설정 안 함
+- 데모 끝나면(9/6 이후) Render 서비스 삭제할 것 — 계속 켜둘 이유 없음
+- R4는 ID.me 인증 끝나야 채워짐 — §7 3번 항목 참고
