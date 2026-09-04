@@ -68,3 +68,11 @@ def test_r3_voluntary_withdrawal_no_record() -> None:
 
 def test_r3_voluntary_withdrawal_has_record() -> None:
     assert scr_normalize.r3_voluntary_withdrawal([{"application_number": "005-414"}]) == 100.0
+
+
+def test_o3_unapproved_when_approved() -> None:
+    assert scr_normalize.o3_unapproved(True) == 0.0
+
+
+def test_o3_unapproved_when_not_approved() -> None:
+    assert scr_normalize.o3_unapproved(False) == 100.0
