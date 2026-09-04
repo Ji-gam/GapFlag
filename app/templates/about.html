@@ -44,8 +44,10 @@
   </tr>
   <tr>
     <td>R4</td><td>특허 밀집도</td>
-    <td><code>min(100, 30 × log₁₀(패밀리수+1))</code></td>
-    <td>25</td><td>EPO OPS</td><td>❌ 키 승인 대기 — 미수집</td>
+    <td><code>min(100, 30 × log₁₀(미국 특허 건수+1))</code></td>
+    <td>25</td><td><a href="https://search.patentsview.org/">PatentsView</a></td>
+    <td>❌ API 키 신원인증(ID.me) 대기 — 미수집. 수집 코드는 준비됨(app/services/src_patentsview_service.py).
+      키 발급되면 미국 등록특허 기준(전세계 패밀리 아님, 알려진 한계)으로 집계된다.</td>
   </tr>
 </table>
 
@@ -97,7 +99,7 @@
   <li>FDA Green Book — 승인·철회 이력 (R3)</li>
   <li><a href="https://europepmc.org/">Europe PMC</a> — 문헌 희소성 (O1)</li>
   <li><a href="https://clinicaltrials.gov/">ClinicalTrials.gov</a> — 임상 부재 (O2)</li>
-  <li>EPO OPS — 특허 밀집도 (R4, 미수집)</li>
+  <li><a href="https://search.patentsview.org/">PatentsView</a> — 특허 밀집도 (R4, 미수집)</li>
 </ul>
 
 <h2>한계</h2>
