@@ -3,8 +3,10 @@
 from collections.abc import AsyncGenerator
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.main import app
 from app.models import Base
 from app.repositories import cmp_repository
 from app.services import cmp_service
@@ -39,3 +41,13 @@ async def test_list_matrix_points_keeps_null_index_compounds(db: AsyncSession) -
     assert by_name["carprofen"]["risk_index"] == 45.0
     assert by_name["gabapentin"]["risk_index"] is None  # 데이터 없음은 None, 0으로 치환하지 않는다
     assert by_name["gabapentin"]["opportunity_index"] == 80.0
+
+
+async def test_about_page_renders() -> None:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/about")
+
+    assert res.status_code == 200
+    assert "커버리지" in res.text
+    assert "참고용" in res.text  # 면책 문구 상속 확인
