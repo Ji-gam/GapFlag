@@ -40,6 +40,11 @@ async def _lookup(db: AsyncSession, ingredient: str, species: str) -> tuple[dict
     return compound, _mock_score(compound)
 
 
+@router.get("/about", response_class=HTMLResponse)
+async def about_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(request, "about.html", {})
+
+
 @router.get("/matrix", response_class=HTMLResponse)
 async def matrix_page(request: Request, db: Db, ingredient: str = "", species: str = "") -> HTMLResponse:
     points = await cmp_service.list_matrix_points(db)

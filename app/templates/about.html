@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<p><a href="/">&larr; 검색으로</a></p>
+<h1>산식 · 데이터 출처</h1>
+
+<h2>이 도구가 답하는 질문</h2>
+<p>
+  동물용 의약품 성분의 <strong>"위험(레드플래그)"</strong>과 <strong>"기회(연구 공백)"</strong>를
+  한 화면에서 교차 검증해 <strong>"왜 아무도 이걸 안 했는지"</strong>에 답한다.
+  위험은 낮은데 기회가 큰 자리, 즉 <strong>비어 있는 이유가 있는 자리</strong>를 찾아내는 것이
+  핵심 가치다.
+</p>
+
+<h2>사분면 읽는 법</h2>
+<p>위험지수·기회지수 각각 50점을 기준선으로 4분류한다.</p>
+<table>
+  <tr><th></th><th>위험 ≥ 50</th><th>위험 &lt; 50</th></tr>
+  <tr><th>기회 ≥ 50</th><td><strong>비어 있는 이유가 있음</strong> ← 핵심</td><td>우선 검토</td></tr>
+  <tr><th>기회 &lt; 50</th><td>회피</td><td>경쟁 구간</td></tr>
+</table>
+
+<h2>위험 지수 구성요소</h2>
+<table>
+  <tr><th>ID</th><th>구성요소</th><th>환산식</th><th>가중치</th><th>데이터 소스</th><th>상태</th></tr>
+  <tr>
+    <td>R1</td><td>임상 중단 이력</td>
+    <td>철회(Withdrawn) 100 · 블랙박스 경고 60 · 없음 0</td>
+    <td>25</td><td><a href="https://platform.opentargets.org/">Open Targets</a></td><td>✅</td>
+  </tr>
+  <tr>
+    <td>R2</td><td>동물 이상반응</td>
+    <td><code>min(100, 25 × log₁₀(건수+1))</code></td>
+    <td>25</td><td><a href="https://open.fda.gov/apis/animalandveterinary/event/">openFDA ADAE</a></td><td>✅</td>
+  </tr>
+  <tr>
+    <td>R3</td><td>승인·철회 이력</td>
+    <td>철회 기록 있음 100 · 없음 0</td>
+    <td>25</td><td>FDA Green Book</td><td>✅</td>
+  </tr>
+  <tr>
+    <td>R4</td><td>특허 밀집도</td>
+    <td><code>min(100, 30 × log₁₀(패밀리수+1))</code></td>
+    <td>25</td><td>EPO OPS</td><td>❌ 키 승인 대기 — 미수집</td>
+  </tr>
+</table>
+
+<h2>기회 지수 구성요소</h2>
+<table>
+  <tr><th>ID</th><th>구성요소</th><th>환산식</th><th>가중치</th><th>데이터 소스</th><th>상태</th></tr>
+  <tr>
+    <td>O1</td><td>문헌 희소성</td>
+    <td><code>max(0, 100 − 30 × log₁₀(논문수+1))</code></td>
+    <td>40</td><td><a href="https://europepmc.org/">Europe PMC</a></td><td>✅</td>
+  </tr>
+  <tr>
+    <td>O2</td><td>임상 부재</td>
+    <td>시험 0건 100 · 1건↑ <code>max(0, 100 − 40 × log₁₀(건수+1))</code></td>
+    <td>30</td><td><a href="https://clinicaltrials.gov/">ClinicalTrials.gov</a></td><td>✅</td>
+  </tr>
+  <tr>
+    <td>O3</td><td>미승인 여부</td>
+    <td>미승인 100 · 승인 0</td>
+    <td>30</td><td>FDA Green Book</td>
+    <td>❌ 의도적 보류 — "승인 목록에 없음"을 곧바로 미승인 확정(100점)으로 단정하면
+      아래 NULL 원칙과 충돌한다. 종(개/고양이)별로 승인 여부가 갈릴 수 있어 별도 섹션과의
+      조인 검증이 끝날 때까지 계산에서 제외한다.</td>
+  </tr>
+</table>
+
+<h2>지수 계산 방법</h2>
+<p>
+  구성요소 값을 가중 평균한다. 각 구성요소는 0~100점으로 환산되며, 값이 없는(NULL)
+  구성요소는 <strong>분자·분모 양쪽에서 제외</strong>한다.
+</p>
+<pre>위험 지수 = Σ(wᵢ × Rᵢ) / Σ(wᵢ)
+기회 지수 = Σ(wⱼ × Oⱼ) / Σ(wⱼ)
+커버리지 = 값이 있는 구성요소 수 / 전체 구성요소 수</pre>
+
+<h2>0점과 데이터 없음(NULL)은 다르다</h2>
+<p>
+  <strong>0점 = 확인했고 위험이 없다.</strong> <strong>NULL(데이터 없음) = 아직 확인하지
+  못했다.</strong> 이 둘을 같은 값으로 섞으면 "위험이 없다"와 "모른다"를 구분할 수 없게 되므로,
+  이 도구는 데이터가 없는 구성요소를 절대 0점으로 치환하지 않는다. 근거 카드에서 회색으로
+  표시되는 항목은 모두 <strong>"위험이 없다는 뜻이 아닙니다."</strong>
+</p>
+
+<h2>데이터 출처</h2>
+<ul>
+  <li><a href="https://open.fda.gov/apis/animalandveterinary/event/">openFDA ADAE</a> — 동물 이상반응 (R2)</li>
+  <li><a href="https://platform.opentargets.org/">Open Targets</a> — 사람 임상 중단 이력 (R1)</li>
+  <li>FDA Green Book — 승인·철회 이력 (R3)</li>
+  <li><a href="https://europepmc.org/">Europe PMC</a> — 문헌 희소성 (O1)</li>
+  <li><a href="https://clinicaltrials.gov/">ClinicalTrials.gov</a> — 임상 부재 (O2)</li>
+  <li>EPO OPS — 특허 밀집도 (R4, 미수집)</li>
+</ul>
+
+<h2>한계</h2>
+<p>
+  가중치(위험 각 25 / 기회 40·30·30)와 로그 계수(25·30·40)는 초기 가정이며, 실측 분포를 보고
+  조정 중이다. 4개 사분면에 성분이 고르게 흩어지지 않으면 계수를 다시 조정하고 이력을 남긴다.
+</p>
+{% endblock %}
