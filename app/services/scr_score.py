@@ -61,7 +61,10 @@ def _demo() -> None:
     assert abs(result["opportunity_coverage"] - 2 / 3) < 1e-9, result
     assert calc_index({})[0] is None
 
-    points = [{"risk_index": 10.0, "opportunity_index": None}, {"risk_index": 30.0, "opportunity_index": 60.0}]
+    points: list[dict] = [
+        {"risk_index": 10.0, "opportunity_index": None},
+        {"risk_index": 30.0, "opportunity_index": 60.0},
+    ]
     assert baselines(points) == (20.0, 60.0)
     assert baselines([]) == (50.0, 50.0)
     print("scr_score._demo ok")
