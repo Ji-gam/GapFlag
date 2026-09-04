@@ -44,12 +44,14 @@ def o3_unapproved(approved: bool) -> float:
     return 0.0 if approved else 100.0
 
 
-def r3_voluntary_withdrawal(withdrawals: list[dict]) -> float:
-    """Green Book Section 6(자발적 승인철회) 기록 → 위험 점수.
+def r3_voluntary_withdrawal(withdrawals: list[dict], approved: bool | None = None) -> float | None:
+    """Green Book Section 6(자발적 승인철회) 기록 + Section 2(승인목록) → 위험 점수.
 
-    ponytail: SESSION_HANDOFF.md의 "철회 100·승인 유지 20·기록 없음 NULL" 3단계는
-    "승인 유지"를 확인하려면 Green Book의 별도 섹션(활성 성분 목록)과 조인이 필요해
-    지금은 재현 불가 — 철회 기록 매칭 여부만으로 100/0 이진 판정한다. 승인 유지 확인이
-    필요해지면 Section 2(Active Ingredients) 연동으로 20점 구간을 추가.
+    철회 100 · 승인 유지 20 · 둘 다 확인 안 됨(approved=None) NULL.
+    o3_unapproved와 같은 Section 2 승인목록을 재사용한다.
     """
-    return 100.0 if withdrawals else 0.0
+    if withdrawals:
+        return 100.0
+    if approved is None:
+        return None
+    return 20.0 if approved else 0.0

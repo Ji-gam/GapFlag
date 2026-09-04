@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.main import app
 from app.models import Base
 from app.repositories import cmp_repository
-from app.services import cmp_service
+from app.services import cmp_service, scr_score
 
 
 @pytest.fixture
@@ -41,6 +41,23 @@ async def test_list_matrix_points_keeps_null_index_compounds(db: AsyncSession) -
     assert by_name["carprofen"]["risk_index"] == 45.0
     assert by_name["gabapentin"]["risk_index"] is None  # 데이터 없음은 None, 0으로 치환하지 않는다
     assert by_name["gabapentin"]["opportunity_index"] == 80.0
+
+
+async def test_matrix_page_renders_relative_baseline(db: AsyncSession) -> None:
+    a = await cmp_repository.upsert_compound(db, "carprofen")
+    await cmp_repository.upsert_score(
+        db, a.id, "dog", risk_index=20.0, risk_coverage=1.0, opportunity_index=60.0, opportunity_coverage=1.0
+    )
+    b = await cmp_repository.upsert_compound(db, "meloxicam")
+    await cmp_repository.upsert_score(
+        db, b.id, "dog", risk_index=40.0, risk_coverage=1.0, opportunity_index=80.0, opportunity_coverage=1.0
+    )
+    points = await cmp_service.list_matrix_points(db)
+
+    risk_baseline, opportunity_baseline = scr_score.baselines(points)
+
+    assert risk_baseline == 30.0  # 고정 50이 아니라 후보군 중앙값
+    assert opportunity_baseline == 70.0
 
 
 async def test_about_page_renders() -> None:

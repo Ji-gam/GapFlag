@@ -62,12 +62,20 @@ def test_r1_clinical_warning_withdrawn_outranks_black_box() -> None:
     assert scr_normalize.r1_clinical_warning(warnings) == 100.0
 
 
-def test_r3_voluntary_withdrawal_no_record() -> None:
-    assert scr_normalize.r3_voluntary_withdrawal([]) == 0.0
-
-
 def test_r3_voluntary_withdrawal_has_record() -> None:
-    assert scr_normalize.r3_voluntary_withdrawal([{"application_number": "005-414"}]) == 100.0
+    assert scr_normalize.r3_voluntary_withdrawal([{"application_number": "005-414"}], approved=True) == 100.0
+
+
+def test_r3_voluntary_withdrawal_no_record_but_approved() -> None:
+    assert scr_normalize.r3_voluntary_withdrawal([], approved=True) == 20.0
+
+
+def test_r3_voluntary_withdrawal_no_record_not_approved() -> None:
+    assert scr_normalize.r3_voluntary_withdrawal([], approved=False) == 0.0
+
+
+def test_r3_voluntary_withdrawal_approval_unknown_is_null() -> None:
+    assert scr_normalize.r3_voluntary_withdrawal([], approved=None) is None
 
 
 def test_o3_unapproved_when_approved() -> None:
